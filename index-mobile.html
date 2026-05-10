@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0A1628">
+    <meta name="description" content="Sabr - Pragmatic Discourse Analyzer for Arabic & English">
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
+    <title>Sabr - سَبْر — محلل الخطاب التداولي</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Mobile safe area adjustments */
+        body {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+
+        /* ===== MOBILE RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            /* --- Header: stack vertically --- */
+            .header {
+                flex-direction: column;
+                gap: 0.3rem;
+                padding: 0.5rem 0.75rem;
+                text-align: center;
+            }
+            .header-right {
+                order: -1;
+                align-self: flex-end;
+            }
+            .header-left {
+                display: none;
+            }
+            .header-title {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0;
+            }
+            .header-logo {
+                font-size: 1.4rem !important;
+            }
+            .header-subtitle {
+                font-size: 0.7rem !important;
+                opacity: 0.8;
+            }
+            .lang-btn {
+                padding: 0.3rem 0.7rem;
+                font-size: 0.75rem;
+            }
+
+            /* --- Layout: sidebar → bottom nav --- */
+            .main-layout {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+            .sidebar-nav {
+                width: 100% !important;
+                height: 56px;
+                flex-direction: row !important;
+                justify-content: space-around;
+                align-items: center;
+                padding: 0 !important;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.4);
+                border-top: 1px solid rgba(212, 168, 67, 0.2);
+                border-left: none !important;
+                gap: 0 !important;
+                background: var(--input-bg, #0D1F3C);
+            }
+            .sidebar-nav .nav-btn {
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 0.15rem !important;
+                padding: 0.35rem 0.3rem !important;
+                width: auto;
+                border: none !important;
+                border-radius: 0 !important;
+                font-size: 0.85rem;
+                text-align: center;
+            }
+            .sidebar-nav .nav-btn.active {
+                border: none !important;
+                border-top: 2px solid var(--gold, #D4A843) !important;
+                background: rgba(212, 168, 67, 0.08);
+            }
+            .nav-btn:hover {
+                transform: none !important;
+            }
+            .nav-icon {
+                font-size: 1.15rem;
+            }
+            .nav-label {
+                font-size: 0.55rem;
+                flex: none;
+            }
+
+            /* --- Content area --- */
+            .content-area {
+                padding: 0.75rem !important;
+                padding-bottom: 70px !important;
+                min-height: calc(100vh - 100px);
+                width: 100%;
+            }
+
+            /* --- Welcome section --- */
+            .welcome-section {
+                padding: 0.5rem !important;
+            }
+            .welcome-header {
+                margin-bottom: 0.75rem;
+            }
+            .welcome-title {
+                font-size: 2rem !important;
+            }
+            .welcome-tagline {
+                font-size: 0.9rem !important;
+            }
+            .welcome-subtitle {
+                font-size: 0.8rem !important;
+            }
+
+            /* --- Upload zone --- */
+            .upload-zone {
+                padding: 1.5rem 1rem !important;
+                margin: 0.5rem 0 !important;
+            }
+            .upload-zone svg {
+                width: 50px;
+                height: 50px;
+            }
+            .upload-title {
+                font-size: 0.85rem !important;
+            }
+            .upload-hint {
+                font-size: 0.75rem !important;
+            }
+
+            /* --- Feature cards --- */
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.5rem !important;
+                padding: 0 !important;
+            }
+            .feature-card {
+                padding: 0.75rem !important;
+            }
+            .feature-icon {
+                font-size: 1.5rem !important;
+            }
+            .feature-title {
+                font-size: 0.7rem !important;
+            }
+            .feature-desc {
+                font-size: 0.6rem !important;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            /* --- Results page --- */
+            .results-header {
+                flex-direction: column !important;
+                gap: 0.5rem !important;
+            }
+            .file-info-card, .search-card {
+                width: 100% !important;
+            }
+
+            /* --- Tabs --- */
+            .tabs-header {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                flex-wrap: nowrap !important;
+                gap: 0.25rem !important;
+                padding-bottom: 0.3rem;
+            }
+            .tab-button {
+                font-size: 0.65rem !important;
+                padding: 0.4rem 0.5rem !important;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+
+            /* --- Tables --- */
+            .table-container {
+                font-size: 0.8rem;
+            }
+            .results-table th, .results-table td {
+                padding: 0.4rem 0.5rem !important;
+                font-size: 0.75rem !important;
+            }
+
+            /* --- Forms --- */
+            .form-row {
+                flex-direction: column !important;
+                gap: 0.4rem !important;
+            }
+            .form-row input, .form-row select, .form-row button {
+                width: 100% !important;
+            }
+
+            /* --- Comparative cards --- */
+            .comp-bar-label {
+                min-width: 60px !important;
+                font-size: 0.7rem !important;
+            }
+
+            /* --- Charts --- */
+            .chart-wrapper {
+                height: 250px !important;
+            }
+            .chart-controls {
+                flex-direction: column !important;
+                gap: 0.4rem;
+            }
+
+            /* --- Search --- */
+            .search-box {
+                flex-direction: column !important;
+                gap: 0.4rem;
+            }
+            .search-box input {
+                width: 100% !important;
+            }
+            .search-button {
+                width: 100% !important;
+            }
+
+            /* --- Lexicon --- */
+            .default-lexicons-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.4rem !important;
+            }
+            .lexicon-actions {
+                flex-direction: column !important;
+            }
+            .lexicon-actions button {
+                width: 100% !important;
+            }
+
+            /* --- Panel header --- */
+            .panel-header {
+                flex-direction: column !important;
+                gap: 0.4rem;
+            }
+            .panel-actions {
+                width: 100%;
+            }
+            .export-button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            /* --- Particles less prominent on mobile --- */
+            .particles-canvas {
+                opacity: 0.3;
+            }
+
+            /* --- Privacy notice --- */
+            .privacy-notice {
+                font-size: 0.7rem !important;
+                padding: 0.5rem !important;
+            }
+
+            /* --- Word cloud --- */
+            .word-cloud-container {
+                max-height: 150px !important;
+            }
+
+            /* --- Info pages --- */
+            .info-section {
+                padding: 0.5rem !important;
+            }
+            .info-content {
+                padding: 0.75rem !important;
+            }
+            .developer-card {
+                padding: 1rem !important;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 360px) {
+            .features-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .default-lexicons-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .welcome-title {
+                font-size: 1.6rem !important;
+            }
+        }
+
+        /* ============================================
+           FOUNDING MEMBERS — Welcome Modal & Badge
+           ============================================ */
+        .founding-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 12, 28, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            animation: foundingFadeIn 0.4s ease;
+        }
+        @keyframes foundingFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes foundingSlideIn {
+            from { transform: translateY(20px) scale(0.96); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        .founding-modal {
+            position: relative;
+            background: linear-gradient(160deg, #0D1F3C 0%, #0A1628 100%);
+            border: 1px solid rgba(212, 168, 67, 0.35);
+            border-radius: 20px;
+            padding: 2rem 1.75rem 1.5rem;
+            max-width: 460px;
+            width: 100%;
+            max-height: 92vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6),
+                        0 0 0 1px rgba(212, 168, 67, 0.1) inset;
+            animation: foundingSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            color: #E8EAF0;
+            text-align: center;
+        }
+        .founding-close {
+            position: absolute;
+            top: 0.6rem;
+            inset-inline-end: 0.8rem;
+            background: transparent;
+            border: none;
+            color: rgba(232, 234, 240, 0.55);
+            font-size: 1.8rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0.3rem 0.6rem;
+            transition: color 0.2s;
+        }
+        .founding-close:hover {
+            color: #D4A843;
+        }
+        .founding-badge-icon {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 4px 12px rgba(212, 168, 67, 0.4));
+        }
+        .founding-title {
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: #D4A843;
+            margin: 0 0 0.4rem;
+        }
+        .founding-subtitle {
+            font-size: 0.95rem;
+            color: rgba(232, 234, 240, 0.75);
+            margin: 0 0 1.25rem;
+            line-height: 1.5;
+        }
+        .founding-counter {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            background: rgba(212, 168, 67, 0.1);
+            border: 1px solid rgba(212, 168, 67, 0.3);
+            padding: 0.5rem 1.1rem;
+            border-radius: 999px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        .founding-counter-number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #D4A843;
+        }
+        .founding-counter-label {
+            color: rgba(232, 234, 240, 0.85);
+        }
+        .founding-benefits {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.5rem;
+            text-align: start;
+        }
+        .founding-benefits li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.7rem;
+            padding: 0.55rem 0;
+            font-size: 0.92rem;
+            line-height: 1.45;
+            color: rgba(232, 234, 240, 0.9);
+        }
+        .founding-check {
+            color: #4ECDC4;
+            font-weight: 800;
+            font-size: 1rem;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+        .founding-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+        }
+        .founding-form input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            background: rgba(13, 31, 60, 0.6);
+            border: 1px solid rgba(212, 168, 67, 0.25);
+            border-radius: 10px;
+            color: #E8EAF0;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.2s, background 0.2s;
+            box-sizing: border-box;
+        }
+        .founding-form input::placeholder {
+            color: rgba(232, 234, 240, 0.4);
+        }
+        .founding-form input:focus {
+            outline: none;
+            border-color: #D4A843;
+            background: rgba(13, 31, 60, 0.9);
+        }
+        .founding-form input.error {
+            border-color: #E76F51;
+        }
+        .founding-submit {
+            margin-top: 0.4rem;
+            padding: 0.95rem 1rem;
+            background: linear-gradient(135deg, #D4A843 0%, #B8902F 100%);
+            color: #0A1628;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+            box-shadow: 0 4px 14px rgba(212, 168, 67, 0.3);
+        }
+        .founding-submit:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(212, 168, 67, 0.45);
+        }
+        .founding-submit:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        .founding-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .founding-skip {
+            background: transparent;
+            border: none;
+            color: rgba(232, 234, 240, 0.55);
+            font-size: 0.85rem;
+            font-family: inherit;
+            cursor: pointer;
+            padding: 0.6rem;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+        .founding-skip:hover {
+            color: rgba(232, 234, 240, 0.9);
+        }
+        .founding-privacy {
+            font-size: 0.75rem;
+            color: rgba(232, 234, 240, 0.45);
+            margin: 1rem 0 0;
+            line-height: 1.5;
+        }
+
+        /* Founding Member badge in header */
+        .founding-member-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: linear-gradient(135deg, rgba(212, 168, 67, 0.2) 0%, rgba(212, 168, 67, 0.08) 100%);
+            border: 1px solid rgba(212, 168, 67, 0.5);
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #D4A843;
+            white-space: nowrap;
+            cursor: default;
+        }
+        .founding-member-badge .star {
+            font-size: 0.8rem;
+        }
+
+        /* Modal mobile responsiveness */
+        @media (max-width: 480px) {
+            .founding-modal {
+                padding: 1.5rem 1.1rem 1rem;
+                border-radius: 16px;
+            }
+            .founding-badge-icon {
+                font-size: 2.8rem;
+            }
+            .founding-title {
+                font-size: 1.4rem;
+            }
+            .founding-subtitle {
+                font-size: 0.88rem;
+            }
+            .founding-benefits li {
+                font-size: 0.86rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop" title="العودة للأعلى">&#8593;</button>
+
+    <!-- ======= FOUNDING MEMBERS WELCOME MODAL ======= -->
+    <div class="founding-overlay" id="foundingOverlay" style="display:none;">
+        <div class="founding-modal" role="dialog" aria-modal="true" aria-labelledby="foundingTitle">
+            <button class="founding-close" id="foundingClose" title="إغلاق" aria-label="إغلاق">&times;</button>
+
+            <div class="founding-badge-icon">🎁</div>
+
+            <h2 id="foundingTitle" class="founding-title" data-ar="عضوية المؤسسين" data-en="Founding Membership">عضوية المؤسسين</h2>
+            <p class="founding-subtitle" data-ar="كن من أول 50 عضواً في رحلة سَبْر" data-en="Be among the first 50 members in Sabr's journey">كن من أول 50 عضواً في رحلة سَبْر</p>
+
+            <div class="founding-counter">
+                <span class="founding-counter-label" data-ar="بقي" data-en="Spots left">بقي</span>
+                <span class="founding-counter-number" id="foundingSpotsLeft">50</span>
+                <span class="founding-counter-label" data-ar="مكاناً فقط" data-en="only">مكاناً فقط</span>
+            </div>
+
+            <ul class="founding-benefits">
+                <li><span class="founding-check">✓</span><span data-ar="وصول مجاني للتطبيق مدى الحياة" data-en="Free lifetime access to the app">وصول مجاني للتطبيق مدى الحياة</span></li>
+                <li><span class="founding-check">✓</span><span data-ar="شارة &quot;عضو مؤسس&quot; حصرية في التطبيق" data-en="Exclusive &quot;Founding Member&quot; badge">شارة &quot;عضو مؤسس&quot; حصرية في التطبيق</span></li>
+                <li><span class="founding-check">✓</span><span data-ar="أولوية في طلبات التطوير والميزات" data-en="Priority in feature requests">أولوية في طلبات التطوير والميزات</span></li>
+                <li><span class="founding-check">✓</span><span data-ar="تواصل مباشر مع المطورة" data-en="Direct line to the developer">تواصل مباشر مع المطورة</span></li>
+            </ul>
+
+            <form class="founding-form" id="foundingForm" novalidate>
+                <input type="text" id="foundingName" required maxlength="80" placeholder="الاسم الكامل" autocomplete="name">
+                <input type="email" id="foundingEmail" required maxlength="120" placeholder="البريد الإلكتروني" autocomplete="email">
+                <input type="text" id="foundingOrg" maxlength="120" placeholder="المؤسسة الأكاديمية (اختياري)" autocomplete="organization">
+
+                <button type="submit" class="founding-submit" id="foundingSubmit">
+                    <span class="founding-submit-text" data-ar="انضم الآن" data-en="Join Now">انضم الآن</span>
+                    <span class="founding-submit-spinner" style="display:none;">⏳</span>
+                </button>
+                <button type="button" class="founding-skip" id="foundingSkip" data-ar="تخطّي - استخدم التطبيق مجاناً" data-en="Skip - Use the app for free">تخطّي - استخدم التطبيق مجاناً</button>
+            </form>
+
+            <p class="founding-privacy" data-ar="بريدك الإلكتروني للتواصل فقط ولن يُشارك مع أي طرف ثالث." data-en="Your email is for contact only and will not be shared.">بريدك الإلكتروني للتواصل فقط ولن يُشارك مع أي طرف ثالث.</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-right">
+            <div class="language-switcher">
+                <button class="lang-btn" data-lang="en">EN</button>
+                <button class="lang-btn active" data-lang="ar">AR</button>
+            </div>
+        </div>
+        <div class="header-title">
+            <span class="header-logo">سَبْر</span>
+            <span class="header-subtitle">محلل الخطاب التداولي</span>
+        </div>
+        <div class="header-left">
+            <span class="founding-member-badge" id="foundingMemberBadge" style="display:none;" title="عضو مؤسس">
+                <span class="star">★</span>
+                <span data-ar="عضو مؤسس" data-en="Founding Member">عضو مؤسس</span>
+            </span>
+            <span class="header-version">v4.0</span>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar-nav">
+            <button class="nav-btn active" data-page="home">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">الرئيسية</span>
+            </button>
+            <button class="nav-btn" data-page="about">
+                <span class="nav-icon">ℹ️</span>
+                <span class="nav-label">عن التطبيق</span>
+            </button>
+            <button class="nav-btn" data-page="developer">
+                <span class="nav-icon">👤</span>
+                <span class="nav-label">عن المطور</span>
+            </button>
+            <button class="nav-btn" data-page="results">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">النتائج</span>
+            </button>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="content-area">
+            <!-- Home Page -->
+            <div class="page active" id="homePage">
+                <!-- Particles Background -->
+                <canvas class="particles-canvas" id="particlesCanvas"></canvas>
+                <div class="welcome-section">
+                    <div class="welcome-header">
+                        <h2 class="welcome-title">سَبْر</h2>
+                        <p class="welcome-tagline">نفاذٌ إلى أعماق الخطاب</p>
+                        <p class="welcome-subtitle">تحليل لغوي وتداولي ومقارن للنصوص العربية والإنجليزية</p>
+                    </div>
+
+                    <div class="upload-zone" id="uploadZone">
+                        <div class="upload-icon">
+                            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="12" y1="11" x2="12" y2="17"></line>
+                                <polyline points="9 14 12 11 15 14"></polyline>
+                            </svg>
+                        </div>
+                        <h3 class="upload-title">اسحب وأفلت ملف PDF أو DOCX أو TXT هنا</h3>
+                        <p class="upload-hint">أو اضغط للاختيار</p>
+                    </div>
+
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">📊</div>
+                            <h4 class="feature-title">تحليل التكرارات</h4>
+                            <p class="feature-desc">تحليل تكرارات الكلمات المعجمية مع استبعاد كلمات الوظيفة</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🔬</div>
+                            <h4 class="feature-title">تحليل تداولي</h4>
+                            <p class="feature-desc">علامات خطاب، أفعال كلام، أدوات استفهام ونفي وتوكيد</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📚</div>
+                            <h4 class="feature-title">معجم مخصص</h4>
+                            <p class="feature-desc">إنشاء معاجم بحثية مخصصة مع تحليل التلازم</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📝</div>
+                            <h4 class="feature-title">استخراج السياقات</h4>
+                            <p class="feature-desc">البحث عن كلمة وعرض سياقاتها في النص</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📈</div>
+                            <h4 class="feature-title">رسوم بيانية</h4>
+                            <p class="feature-desc">رسوم تفاعلية متنوعة مع إمكانية التصدير</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">💾</div>
+                            <h4 class="feature-title">تصدير متعدد</h4>
+                            <p class="feature-desc">تصدير بصيغ Excel, CSV, JSON</p>
+                        </div>
+                    </div>
+
+                    <div class="privacy-notice">
+                        <span class="privacy-icon">🔒</span>
+                        <span>جميع البيانات محلية - لا إرسال لخوادم خارجية</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Page -->
+            <div class="page" id="aboutPage">
+                <div class="info-section">
+                    <h2 class="section-title">عن التطبيق</h2>
+                    <div class="info-content" id="aboutContent">
+                        <h3>سَبْر Sabr — محلل الخطاب التداولي</h3>
+                        <p>تطبيق متخصص في سبر أغوار الخطاب — تحليل لغوي وتداولي ومقارن للنصوص العربية والإنجليزية.</p>
+                        <h4>الميزات:</h4>
+                        <ul>
+                            <li>تحليل تكرارات الكلمات المعجمية مع استبعاد كلمات الوظيفة</li>
+                            <li>تحليل تداولي شامل (علامات خطاب، أفعال كلام، استفهام، نفي، توكيد)</li>
+                            <li>معجم مخصص قابل للتعديل مع تحليل التلازم</li>
+                            <li>استخراج السياقات (KWIC)</li>
+                            <li>رسوم بيانية تفاعلية</li>
+                            <li>تصدير متعدد الصيغ (Excel, CSV, JSON)</li>
+                            <li>دعم PDF, DOCX, TXT</li>
+                            <li>معالجة محلية بدون إنترنت</li>
+                        </ul>
+                        <h4>الإصدار:</h4>
+                        <p>v4.0.0 - 2026</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Developer Page -->
+            <div class="page" id="developerPage">
+                <div class="info-section">
+                    <h2 class="section-title">عن المطور</h2>
+                    <div class="info-content">
+                        <div class="developer-card">
+                            <div class="developer-avatar">👩‍💻</div>
+                            <h3>منى الكندي</h3>
+                            <p class="developer-title">@munalkindi</p>
+                            <p class="developer-bio">مبتكرة في مجال الذكاء الاصطناعي في التعليم</p>
+                            <div class="contact-info">
+                                <div class="contact-item">
+                                    <span class="contact-icon">📧</span>
+                                    <span>munalkindi@gmail.com</span>
+                                </div>
+                                <div class="contact-item">
+                                    <span class="contact-icon">📱</span>
+                                    <span>+971 50 300 3481</span>
+                                </div>
+                                <div class="contact-item">
+                                    <span class="contact-icon">🐦</span>
+                                    <span>@munalkindi</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Page -->
+            <div class="page" id="resultsPage">
+                <div class="results-container">
+                    <!-- File Info Card -->
+                    <div class="results-header">
+                        <div class="file-info-card">
+                            <h3>معلومات الملف</h3>
+                            <div class="file-details">
+                                <div class="detail-row">
+                                    <span class="detail-label">اسم الملف:</span>
+                                    <span class="detail-value" id="resultFileName">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">الحجم:</span>
+                                    <span class="detail-value" id="resultFileSize">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">إجمالي الكلمات:</span>
+                                    <span class="detail-value" id="resultTotalWords">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">الكلمات المعجمية:</span>
+                                    <span class="detail-value" id="resultContentWords">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">الكلمات الفريدة:</span>
+                                    <span class="detail-value" id="resultUniqueWords">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">لغة النص:</span>
+                                    <span class="detail-value" id="resultLanguage">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Search -->
+                        <div class="search-card">
+                            <h3>🔍 البحث عن كلمة</h3>
+                            <div class="search-box">
+                                <input type="text" id="resultSearchInput" placeholder="أدخل كلمة للبحث...">
+                                <button id="resultSearchBtn" class="search-button">بحث</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="results-tabs">
+                        <div class="tabs-header">
+                            <button class="tab-button active" data-tab="frequencies">📊 التكرارات</button>
+                            <button class="tab-button" data-tab="pragmatic">🔬 التحليل التداولي</button>
+                            <button class="tab-button" data-tab="lexicon">📚 المعجم المخصص</button>
+                            <button class="tab-button" data-tab="comparative">⚖️ التحليل المقارن</button>
+                            <button class="tab-button" data-tab="contexts">📝 السياقات</button>
+                            <button class="tab-button" data-tab="charts">📈 الرسوم البيانية</button>
+                            <button class="tab-button" data-tab="settings">⚙️ الإعدادات</button>
+                        </div>
+
+                        <!-- ======= FREQUENCIES TAB ======= -->
+                        <div class="tab-panel active" id="frequenciesPanel">
+                            <div class="word-cloud-container" id="wordCloudContainer"></div>
+                            <div class="panel-header">
+                                <span>عدد النتائج: <strong id="freqCount">0</strong></span>
+                                <div class="panel-actions">
+                                    <input type="text" id="freqFilter" placeholder="فلتر..." class="filter-input">
+                                    <button id="exportBtn" class="export-button">
+                                        <span>📥</span>
+                                        <span>تصدير</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table class="results-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>الكلمة</th>
+                                            <th>التكرار</th>
+                                            <th>النسبة %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="frequenciesBody">
+                                        <tr><td colspan="4" class="no-data">لا توجد نتائج بعد</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ======= PRAGMATIC ANALYSIS TAB ======= -->
+                        <div class="tab-panel" id="pragmaticPanel">
+                            <div class="panel-header">
+                                <span>إجمالي العناصر التداولية: <strong id="pragmaticTotal">0</strong></span>
+                                <button id="exportPragmaticBtn" class="export-button">
+                                    <span>📥</span>
+                                    <span>تصدير التحليل التداولي</span>
+                                </button>
+                            </div>
+                            <div id="pragmaticResults" class="pragmatic-results">
+                                <div class="no-data">قم بتحميل ملف لبدء التحليل التداولي</div>
+                            </div>
+                        </div>
+
+                        <!-- ======= CUSTOM LEXICON TAB ======= -->
+                        <div class="tab-panel" id="lexiconPanel">
+                            <div class="default-lexicons-section">
+                                <h3>📖 المعاجم الجاهزة</h3>
+                                <p class="settings-desc">اختر معجمًا جاهزًا لتحليل النص، أو أنشئ معجمك المخصص أدناه</p>
+                                <div class="default-lexicons-grid" id="defaultLexiconsGrid"></div>
+                                <div class="lexicon-actions" style="margin-top:0.5rem;">
+                                    <button id="loadDefaultLexiconBtn" class="btn-success">📥 تحميل المعجم المحدد</button>
+                                    <button id="analyzeDefaultLexiconBtn" class="btn-primary">🔍 تحليل المعجم المحدد مباشرة</button>
+                                </div>
+                            </div>
+
+                            <hr style="margin: 1.5rem 0; border-color: #1E3A5F;">
+
+                            <div class="lexicon-builder">
+                                <h3>✏️ إنشاء معجم مخصص</h3>
+                                <div class="lexicon-form">
+                                    <div class="form-row">
+                                        <input type="text" id="lexiconCategoryName" placeholder="اسم الفئة (مثال: المعجم الإنساني)">
+                                        <button id="addCategoryBtn" class="btn-primary">إضافة فئة</button>
+                                    </div>
+                                    <div class="form-row">
+                                        <input type="text" id="lexiconWords" placeholder="الكلمات (مفصولة بفواصل: رحمة، تسامح، عطاء...)">
+                                        <select id="lexiconCategorySelect">
+                                            <option value="">اختر الفئة</option>
+                                        </select>
+                                        <button id="addWordsBtn" class="btn-primary">إضافة كلمات</button>
+                                    </div>
+                                </div>
+                                <div id="lexiconCategories" class="lexicon-categories"></div>
+                                <div class="lexicon-actions">
+                                    <button id="analyzeLexiconBtn" class="btn-success">🔍 تحليل المعجم</button>
+                                    <button id="exportLexiconBtn" class="btn-secondary">📥 تصدير المعجم</button>
+                                    <button id="importLexiconBtn" class="btn-secondary">📤 استيراد معجم</button>
+                                    <button id="clearLexiconBtn" class="btn-danger">🗑️ مسح الكل</button>
+                                </div>
+                            </div>
+
+                            <div id="lexiconResults" class="lexicon-results" style="display:none;">
+                                <h3>نتائج تحليل المعجم</h3>
+                                <div class="chart-wrapper" style="height:300px; margin-bottom:1rem;">
+                                    <canvas id="lexiconChart"></canvas>
+                                </div>
+                                <div id="lexiconDetailedResults"></div>
+                            </div>
+
+                            <div class="collocation-section">
+                                <h3>تحليل التلازم</h3>
+                                <div class="form-row">
+                                    <input type="text" id="collocationWord" placeholder="أدخل كلمة لتحليل التلازم...">
+                                    <select id="collocationWindow">
+                                        <option value="3">3 كلمات</option>
+                                        <option value="5" selected>5 كلمات</option>
+                                        <option value="7">7 كلمات</option>
+                                    </select>
+                                    <button id="analyzeCollocationBtn" class="btn-primary">تحليل</button>
+                                </div>
+                                <div id="collocationResults"></div>
+                            </div>
+                        </div>
+
+                        <!-- ======= COMPARATIVE ANALYSIS TAB ======= -->
+                        <div class="tab-panel" id="comparativePanel">
+                            <div class="panel-header">
+                                <span>التحليل المقارن التداولي — <strong>17 بُعدًا تحليليًا</strong></span>
+                                <button id="exportComparativeBtn" class="export-button">
+                                    <span>📥</span>
+                                    <span>تصدير التحليل المقارن</span>
+                                </button>
+                            </div>
+                            <div class="comparative-filters">
+                                <button class="comp-filter-btn active" data-group="all">الكل</button>
+                                <button class="comp-filter-btn" data-group="identity">هوية المتكلم</button>
+                                <button class="comp-filter-btn" data-group="temporal">الزمن والفعل</button>
+                                <button class="comp-filter-btn" data-group="epistemic">الموقف المعرفي</button>
+                                <button class="comp-filter-btn" data-group="strategy">الاستراتيجية الخطابية</button>
+                            </div>
+                            <div class="chart-wrapper" style="height:350px; margin-bottom:1.5rem;">
+                                <canvas id="comparativeRadar"></canvas>
+                            </div>
+                            <div id="comparativeResults" class="comparative-results">
+                                <div class="no-data">قم بتحميل ملف لبدء التحليل المقارن التداولي</div>
+                            </div>
+                        </div>
+
+                        <!-- ======= CONTEXTS TAB ======= -->
+                        <div class="tab-panel" id="contextsPanel">
+                            <div class="panel-header">
+                                <span>عدد النتائج: <strong id="contextCount">0</strong></span>
+                            </div>
+                            <div class="search-box" style="margin-bottom: 1rem;">
+                                <input type="text" id="contextSearchInput" placeholder="أدخل كلمة لعرض سياقاتها في النص...">
+                                <button id="contextSearchBtn" class="search-button">بحث</button>
+                            </div>
+                            <p class="settings-desc">يمكنك أيضاً الضغط على أي كلمة في جدول التكرارات لعرض سياقاتها</p>
+                            <div class="contexts-container" id="contextsList">
+                                <div class="no-data">ابحث عن كلمة لعرض السياقات</div>
+                            </div>
+                        </div>
+
+                        <!-- ======= CHARTS TAB ======= -->
+                        <div class="tab-panel" id="chartsPanel">
+                            <div class="chart-controls">
+                                <div class="control-item">
+                                    <label>نوع الرسم:</label>
+                                    <select id="chartType">
+                                        <option value="bar">أعمدة عمودية</option>
+                                        <option value="horizontalBar">أعمدة أفقية</option>
+                                        <option value="pie">دائري</option>
+                                        <option value="line">خطي</option>
+                                        <option value="doughnut">دائري مفرغ</option>
+                                    </select>
+                                </div>
+                                <div class="control-item">
+                                    <label>عدد الكلمات:</label>
+                                    <select id="chartWordCount">
+                                        <option value="10">10</option>
+                                        <option value="20" selected>20</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </div>
+                                <div class="control-item">
+                                    <button id="downloadPNG" class="chart-download-btn">📥 PNG</button>
+                                    <button id="downloadJPG" class="chart-download-btn">📥 JPG</button>
+                                </div>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="frequencyChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- ======= SETTINGS TAB ======= -->
+                        <div class="tab-panel" id="settingsPanel">
+                            <div class="settings-section">
+                                <h3>⚙️ كلمات الإيقاف (Stopwords)</h3>
+                                <p class="settings-desc">الكلمات المستبعدة من تحليل التكرارات (حروف الجر، العطف، إلخ)</p>
+                                <div class="form-row">
+                                    <input type="text" id="addStopwordInput" placeholder="أضف كلمة إيقاف جديدة...">
+                                    <button id="addStopwordBtn" class="btn-primary">إضافة</button>
+                                </div>
+                                <div class="stopwords-display" id="stopwordsDisplay"></div>
+                                <div class="settings-actions">
+                                    <button id="resetStopwordsBtn" class="btn-secondary">إعادة تعيين القائمة الافتراضية</button>
+                                    <button id="reanalyzeBtn" class="btn-success">🔄 إعادة التحليل</button>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h3>📏 حجم نافذة السياق</h3>
+                                <div class="form-row">
+                                    <label>عدد الكلمات قبل وبعد:</label>
+                                    <select id="contextWindowSize">
+                                        <option value="3">3</option>
+                                        <option value="5" selected>5</option>
+                                        <option value="7">7</option>
+                                        <option value="10">10</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="./src/app.js"></script>
+</body>
+</html>

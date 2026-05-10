@@ -1,0 +1,65 @@
+# ============ Dependencies ============
+node_modules/
+package-lock.json
+
+# ============ Build output ============
+dist/
+dist-electron/
+out/
+
+# ============ Android build artifacts ============
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/captures/
+android/app/release/
+android/.idea/
+
+# ============ iOS build artifacts ============
+ios/build/
+ios/App/Pods/
+ios/App/build/
+ios/DerivedData/
+ios/.idea/
+
+# ============ Capacitor ============
+android/app/src/main/assets/public/
+ios/App/App/public/
+
+# ============ Sensitive files (NEVER commit) ============
+sabr-release-key.jks
+*.jks
+*.keystore
+android/keystore.properties
+google-services.json
+GoogleService-Info.plist
+
+# ============ Environment / config ============
+.env
+.env.local
+.env.production
+
+# ============ Editor / OS ============
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ============ Logs ============
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ============ Claude / IDE caches ============
+.claude/launch.json
+
+# ============ Large binaries (use GitHub Releases) ============
+*.aab
+*.apk
+*.exe
+!generate-icon.js

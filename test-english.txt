@@ -1,0 +1,4 @@
+This is a sample text for testing the analyzer. The analyzer should work with English text as well as Arabic text.
+Text analysis is an important tool for researchers. The analysis helps researchers understand patterns in the text.
+Frequency analysis shows which words appear most often in the text. The most frequent words give insights into the main topics.
+Analysis and research are essential tools for understanding data. Text mining and analysis provide valuable insights.
