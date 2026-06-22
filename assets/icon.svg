@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0A1628"/>
+      <stop offset="100%" style="stop-color:#132240"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4A843"/>
+      <stop offset="100%" style="stop-color:#F0D78C"/>
+    </linearGradient>
+    <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2EC4B6"/>
+      <stop offset="50%" style="stop-color:#1A9E93"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="15" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="220" fill="url(#bgGrad)"/>
+
+  <!-- Outer border glow -->
+  <rect x="8" y="8" width="1008" height="1008" rx="216" fill="none" stroke="url(#goldGrad)" stroke-width="3" opacity="0.4"/>
+
+  <!-- Concentric analysis circles -->
+  <circle cx="512" cy="480" r="340" fill="none" stroke="#1E3A5F" stroke-width="1.5" opacity="0.5"/>
+  <circle cx="512" cy="480" r="270" fill="none" stroke="#1E3A5F" stroke-width="1" opacity="0.4"/>
+  <circle cx="512" cy="480" r="200" fill="none" stroke="#1E3A5F" stroke-width="1" opacity="0.3"/>
+
+  <!-- Decorative dots on circles (data points) -->
+  <circle cx="512" cy="140" r="6" fill="#2EC4B6" opacity="0.7"/>
+  <circle cx="752" cy="280" r="5" fill="#D4A843" opacity="0.6"/>
+  <circle cx="272" cy="280" r="5" fill="#D4A843" opacity="0.6"/>
+  <circle cx="812" cy="480" r="4" fill="#2EC4B6" opacity="0.5"/>
+  <circle cx="212" cy="480" r="4" fill="#2EC4B6" opacity="0.5"/>
+  <circle cx="752" cy="680" r="5" fill="#D4A843" opacity="0.5"/>
+  <circle cx="272" cy="680" r="5" fill="#D4A843" opacity="0.5"/>
+
+  <!-- Connecting lines (analysis network) -->
+  <line x1="512" y1="140" x2="752" y2="280" stroke="#2EC4B6" stroke-width="1" opacity="0.2"/>
+  <line x1="512" y1="140" x2="272" y2="280" stroke="#2EC4B6" stroke-width="1" opacity="0.2"/>
+  <line x1="752" y1="280" x2="812" y2="480" stroke="#D4A843" stroke-width="1" opacity="0.15"/>
+  <line x1="272" y1="280" x2="212" y2="480" stroke="#D4A843" stroke-width="1" opacity="0.15"/>
+  <line x1="812" y1="480" x2="752" y2="680" stroke="#2EC4B6" stroke-width="1" opacity="0.15"/>
+  <line x1="212" y1="480" x2="272" y2="680" stroke="#2EC4B6" stroke-width="1" opacity="0.15"/>
+
+  <!-- Magnifying glass subtle outline -->
+  <circle cx="512" cy="440" r="180" fill="none" stroke="url(#tealGrad)" stroke-width="2.5" opacity="0.25"/>
+  <line x1="640" y1="575" x2="720" y2="660" stroke="#2EC4B6" stroke-width="8" stroke-linecap="round" opacity="0.2"/>
+
+  <!-- Arabic text: سَبْر -->
+  <text x="512" y="510" text-anchor="middle" font-family="'Cairo', 'Tajawal', 'Traditional Arabic', serif" font-size="220" font-weight="900" fill="url(#goldGrad)" filter="url(#glow)" letter-spacing="8">
+    سَبْر
+  </text>
+
+  <!-- Subtitle line -->
+  <line x1="320" y1="580" x2="704" y2="580" stroke="url(#goldGrad)" stroke-width="2" opacity="0.4"/>
+
+  <!-- Subtitle: محلل الخطاب التداولي -->
+  <text x="512" y="640" text-anchor="middle" font-family="'Cairo', 'Tajawal', sans-serif" font-size="52" font-weight="600" fill="#8B9BB4" letter-spacing="2">
+    محلل الخطاب التداولي
+  </text>
+
+  <!-- Bottom decorative element: Pragmatic Discourse Analyzer -->
+  <text x="512" y="710" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="36" font-weight="400" fill="#5A6B85" letter-spacing="4">
+    PRAGMATIC DISCOURSE ANALYZER
+  </text>
+
+  <!-- Small version indicator -->
+  <rect x="440" y="740" width="144" height="32" rx="16" fill="none" stroke="#2EC4B6" stroke-width="1.5" opacity="0.4"/>
+  <text x="512" y="763" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="20" font-weight="600" fill="#2EC4B6" opacity="0.6">
+    v4.0
+  </text>
+</svg>

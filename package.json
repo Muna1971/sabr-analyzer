@@ -1,0 +1,89 @@
+{
+  "name": "sabr-analyzer",
+  "version": "5.0.0",
+  "description": "سَبْر — محلل الخطاب التداولي | Sabr - Pragmatic Discourse Analyzer",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:desktop": "electron-builder",
+    "dev:mobile": "vite --config vite.config.js",
+    "build:mobile": "vite build --config vite.config.js",
+    "cap:init": "cap init 'Sabr' 'com.sabr.analyzer' --web-dir dist",
+    "cap:add:android": "cap add android",
+    "cap:add:ios": "cap add ios",
+    "cap:sync": "cap sync",
+    "cap:open:android": "cap open android",
+    "cap:open:ios": "cap open ios",
+    "build:android": "npm run build:mobile && cap sync android",
+    "build:ios": "npm run build:mobile && cap sync ios"
+  },
+  "author": "Muna Al Kindi",
+  "license": "ISC",
+  "build": {
+    "appId": "com.sabr.analyzer",
+    "productName": "Sabr Analyzer",
+    "icon": "assets/icon.png",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.education"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "runAfterFinish": true,
+      "shortcutName": "Sabr Analyzer",
+      "artifactName": "Sabr-Analyzer-v${version}-Setup.${ext}"
+    },
+    "files": [
+      "**/*",
+      "!src/**",
+      "!dist/**",
+      "!android/**",
+      "!ios/**",
+      "!README.md",
+      "!node_modules/.cache",
+      "!dist-electron",
+      "!index-mobile.html",
+      "!vite.config.js",
+      "!capacitor.config.ts"
+    ]
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1",
+    "exceljs": "^4.4.0",
+    "mammoth": "^1.11.0",
+    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^4.10.38",
+    "tesseract.js": "^5.1.1",
+    "canvas": "^2.11.2"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.2.1",
+    "@capacitor/core": "^6.2.1",
+    "@capacitor/ios": "^6.0.0",
+    "electron": "^39.1.1",
+    "electron-builder": "^26.0.12",
+    "vite": "^5.4.21"
+  }
+}

@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sabr - سَبْر — محلل الخطاب التداولي</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================
+           FOUNDING MEMBERS — Welcome Modal & Badge
+           ============================================ */
+        .founding-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(30, 77, 74, 0.3);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            animation: foundingFadeIn 0.4s ease;
+        }
+        @keyframes foundingFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes foundingSlideIn {
+            from { transform: translateY(20px) scale(0.96); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        .founding-modal {
+            position: relative;
+            background: linear-gradient(160deg, #FFFFFF 0%, #F5F0EA 100%);
+            border: 1px solid rgba(30, 77, 74, 0.2);
+            border-radius: 20px;
+            padding: 2.25rem 2rem 1.75rem;
+            max-width: 500px;
+            width: 100%;
+            max-height: 92vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12),
+                        0 0 0 1px rgba(30, 77, 74, 0.05) inset;
+            animation: foundingSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            color: #1A3C3A;
+            text-align: center;
+        }
+        .founding-close {
+            position: absolute;
+            top: 0.6rem;
+            inset-inline-end: 0.8rem;
+            background: transparent; border: none;
+            color: rgba(26, 60, 58, 0.4);
+            font-size: 1.8rem; line-height: 1;
+            cursor: pointer; padding: 0.3rem 0.6rem;
+            transition: color 0.2s;
+        }
+        .founding-close:hover { color: #1E4D4A; }
+        .founding-badge-icon {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 4px 12px rgba(30, 77, 74, 0.2));
+        }
+        .founding-title {
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.9rem; font-weight: 800;
+            color: #1E4D4A; margin: 0 0 0.4rem;
+        }
+        .founding-subtitle {
+            font-size: 1rem;
+            color: rgba(26, 60, 58, 0.65);
+            margin: 0 0 1.4rem; line-height: 1.5;
+        }
+        .founding-counter {
+            display: inline-flex; align-items: baseline; gap: 0.5rem;
+            background: rgba(30, 77, 74, 0.06);
+            border: 1px solid rgba(30, 77, 74, 0.15);
+            padding: 0.55rem 1.2rem; border-radius: 999px;
+            margin-bottom: 1.5rem; font-size: 0.95rem;
+        }
+        .founding-counter-number {
+            font-size: 1.7rem; font-weight: 800; color: #1E4D4A;
+        }
+        .founding-counter-label { color: rgba(26, 60, 58, 0.7); }
+        .founding-benefits {
+            list-style: none; padding: 0; margin: 0 0 1.5rem;
+            text-align: start;
+        }
+        .founding-benefits li {
+            display: flex; align-items: flex-start; gap: 0.7rem;
+            padding: 0.55rem 0;
+            font-size: 0.95rem; line-height: 1.45;
+            color: rgba(26, 60, 58, 0.85);
+        }
+        .founding-check {
+            color: #5B8F8D; font-weight: 800; font-size: 1.05rem;
+            flex-shrink: 0; margin-top: 0.1rem;
+        }
+        .founding-form { display: flex; flex-direction: column; gap: 0.7rem; }
+        .founding-form input {
+            width: 100%; padding: 0.9rem 1rem;
+            background: #FAFAF7;
+            border: 1px solid rgba(30, 77, 74, 0.15);
+            border-radius: 10px;
+            color: #1A3C3A; font-size: 0.95rem; font-family: inherit;
+            transition: border-color 0.2s, background 0.2s;
+            box-sizing: border-box;
+        }
+        .founding-form input::placeholder { color: rgba(26, 60, 58, 0.35); }
+        .founding-form input:focus {
+            outline: none; border-color: #1E4D4A;
+            background: #FFFFFF;
+        }
+        .founding-form input.error { border-color: #C45A3E; }
+        .founding-submit {
+            margin-top: 0.5rem; padding: 1rem;
+            background: linear-gradient(135deg, #1E4D4A 0%, #153C3A 100%);
+            color: #FFFFFF; border: none; border-radius: 10px;
+            font-size: 1.05rem; font-weight: 700; font-family: inherit;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+            box-shadow: 0 4px 14px rgba(30, 77, 74, 0.25);
+        }
+        .founding-submit:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(30, 77, 74, 0.35);
+        }
+        .founding-submit:active:not(:disabled) { transform: translateY(0); }
+        .founding-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+        .founding-skip {
+            background: transparent; border: none;
+            color: rgba(26, 60, 58, 0.45);
+            font-size: 0.88rem; font-family: inherit; cursor: pointer;
+            padding: 0.6rem; text-decoration: underline;
+            transition: color 0.2s;
+        }
+        .founding-skip:hover { color: rgba(26, 60, 58, 0.8); }
+        .founding-privacy {
+            font-size: 0.78rem; color: rgba(26, 60, 58, 0.4);
+            margin: 1rem 0 0; line-height: 1.5;
+        }
+        .founding-member-badge {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            background: linear-gradient(135deg, rgba(30, 77, 74, 0.1) 0%, rgba(30, 77, 74, 0.04) 100%);
+            border: 1px solid rgba(30, 77, 74, 0.25);
+            padding: 0.3rem 0.7rem; border-radius: 999px;
+            font-size: 0.75rem; font-weight: 700; color: #1E4D4A;
+            white-space: nowrap; cursor: default;
+            margin-inline-end: 0.5rem;
+        }
+        .founding-member-badge .star { font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <!-- ======= SPLASH SCREEN ======= -->
+    <div class="splash-screen" id="splashScreen">
+        <div class="splash-particles" id="splashParticles"></div>
+        <div class="splash-content">
+            <div class="splash-logo-container">
+                <div class="splash-ring splash-ring-1"></div>
+                <div class="splash-ring splash-ring-2"></div>
+                <div class="splash-ring splash-ring-3"></div>
+                <div class="splash-logo-text">سَبْر</div>
+            </div>
+            <div class="splash-title">محلل الخطاب التداولي</div>
+            <div class="splash-subtitle">Pragmatic Discourse Analyzer</div>
+            <div class="splash-version">v5.0</div>
+            <div class="splash-loading">
+                <div class="splash-loading-bar">
+                    <div class="splash-loading-fill" id="splashLoadingFill"></div>
+                </div>
+                <div class="splash-loading-text" id="splashLoadingText">جارٍ التحميل...</div>
+            </div>
+        </div>
+        <div class="splash-footer">
+            <span>منى الكندي — جامعة الإمارات العربية المتحدة</span>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop" title="العودة للأعلى">&#8593;</button>
+
+    <!-- ======= FOUNDING MEMBERS WELCOME MODAL ======= -->
+    <div class="founding-overlay" id="foundingOverlay" style="display:none;">
+        <div class="founding-modal" role="dialog" aria-modal="true" aria-labelledby="foundingTitle">
+            <button class="founding-close" id="foundingClose" title="إغلاق" aria-label="إغلاق">&times;</button>
+            <div class="founding-badge-icon">🎁</div>
+            <h2 id="foundingTitle" class="founding-title" data-ar="عضوية المؤسسين" data-en="Founding Membership">عضوية المؤسسين</h2>
+            <p class="founding-subtitle" data-ar="كن من أول 50 عضواً في رحلة سَبْر" data-en="Be among the first 50 members in Sabr's journey">كن من أول 50 عضواً في رحلة سَبْر</p>
+            <div class="founding-counter">
+                <span class="founding-counter-label" data-ar="بقي" data-en="Spots left">بقي</span>
+                <span class="founding-counter-number" id="foundingSpotsLeft">50</span>
+                <span class="founding-counter-label" data-ar="مكاناً فقط" data-en="only">مكاناً فقط</span>
+            </div>
+            <ul class="founding-benefits">
+                <li><span class="founding-check">✓</span><span data-ar="وصول مجاني للتطبيق مدى الحياة" data-en="Free lifetime access to the app">وصول مجاني للتطبيق مدى الحياة</span></li>
+                <li><span class="founding-check">✓</span><span data-ar="شارة &quot;عضو مؤسس&quot; حصرية في التطبيق" data-en="Exclusive &quot;Founding Member&quot; badge">شارة &quot;عضو مؤسس&quot; حصرية في التطبيق</span></li>
+                <li><span class="founding-check">✓</span><span data-ar="أولوية في طلبات التطوير والميزات" data-en="Priority in feature requests">أولوية في طلبات التطوير والميزات</span></li>
+                <li><span class="founding-check">✓</span><span data-ar="تواصل مباشر مع المطورة" data-en="Direct line to the developer">تواصل مباشر مع المطورة</span></li>
+            </ul>
+            <form class="founding-form" id="foundingForm" novalidate>
+                <input type="text" id="foundingName" required maxlength="80" placeholder="الاسم الكامل" autocomplete="name">
+                <input type="email" id="foundingEmail" required maxlength="120" placeholder="البريد الإلكتروني" autocomplete="email">
+                <input type="text" id="foundingOrg" maxlength="120" placeholder="المؤسسة الأكاديمية (اختياري)" autocomplete="organization">
+                <button type="submit" class="founding-submit" id="foundingSubmit">
+                    <span class="founding-submit-text" data-ar="انضم الآن" data-en="Join Now">انضم الآن</span>
+                    <span class="founding-submit-spinner" style="display:none;">⏳</span>
+                </button>
+                <button type="button" class="founding-skip" id="foundingSkip" data-ar="تخطّي - استخدم التطبيق مجاناً" data-en="Skip - Use the app for free">تخطّي - استخدم التطبيق مجاناً</button>
+            </form>
+            <p class="founding-privacy" data-ar="بريدك الإلكتروني للتواصل فقط ولن يُشارك مع أي طرف ثالث." data-en="Your email is for contact only and will not be shared.">بريدك الإلكتروني للتواصل فقط ولن يُشارك مع أي طرف ثالث.</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-right">
+            <div class="language-switcher">
+                <button class="lang-btn" data-lang="en">EN</button>
+                <button class="lang-btn active" data-lang="ar">AR</button>
+            </div>
+        </div>
+        <div class="header-title">
+            <img src="assets/icon.png" alt="سبر" class="header-icon-img">
+            <span class="header-logo">سَبْر</span>
+            <span class="header-subtitle">محلل الخطاب التداولي</span>
+        </div>
+        <div class="header-left">
+            <span class="founding-member-badge" id="foundingMemberBadge" style="display:none;" title="عضو مؤسس">
+                <span class="star">★</span>
+                <span data-ar="عضو مؤسس" data-en="Founding Member">عضو مؤسس</span>
+            </span>
+            <span class="header-version">v5.0</span>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar-nav">
+            <button class="nav-btn active" data-page="home">
+                <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+                <span class="nav-label">الرئيسية</span>
+            </button>
+            <button class="nav-btn" data-page="project">
+                <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+                <span class="nav-label">المشروع</span>
+            </button>
+            <button class="nav-btn" data-page="about">
+                <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+                <span class="nav-label">عن التطبيق</span>
+            </button>
+            <button class="nav-btn" data-page="developer">
+                <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span class="nav-label">عن المطور</span>
+            </button>
+            <button class="nav-btn" data-page="results">
+                <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></span>
+                <span class="nav-label">النتائج</span>
+            </button>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="content-area">
+            <!-- Home Page -->
+            <div class="page active" id="homePage">
+                <!-- Particles Background -->
+                <canvas class="particles-canvas" id="particlesCanvas"></canvas>
+
+                <div class="dashboard-container">
+                    <!-- Hero Banner -->
+                    <div class="dash-hero">
+                        <div class="dash-hero-bg"></div>
+                        <div class="dash-hero-content">
+                            <img src="assets/icon.png" alt="سبر" class="dash-hero-icon">
+                            <div class="dash-hero-text">
+                                <h2 class="dash-hero-title">سَبْر</h2>
+                                <p class="dash-hero-tagline">نفاذٌ إلى أعماق الخطاب</p>
+                                <p class="dash-hero-sub">تحليل لغوي وتداولي ومقارن للنصوص العربية والإنجليزية</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats Row -->
+                    <div class="dash-stats-row">
+                        <div class="dash-stat-card">
+                            <div class="dash-stat-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </div>
+                            <div class="dash-stat-info">
+                                <span class="dash-stat-value" id="dashStatFiles">0</span>
+                                <span class="dash-stat-label" data-ar="ملفات محلّلة" data-en="Files analyzed">ملفات محلّلة</span>
+                            </div>
+                        </div>
+                        <div class="dash-stat-card">
+                            <div class="dash-stat-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                            </div>
+                            <div class="dash-stat-info">
+                                <span class="dash-stat-value" id="dashStatWords">0</span>
+                                <span class="dash-stat-label" data-ar="كلمة معالَجة" data-en="Words processed">كلمة معالَجة</span>
+                            </div>
+                        </div>
+                        <div class="dash-stat-card">
+                            <div class="dash-stat-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                            </div>
+                            <div class="dash-stat-info">
+                                <span class="dash-stat-value" id="dashStatProjects">0</span>
+                                <span class="dash-stat-label" data-ar="مشاريع نشطة" data-en="Active projects">مشاريع نشطة</span>
+                            </div>
+                        </div>
+                        <div class="dash-stat-card">
+                            <div class="dash-stat-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                            </div>
+                            <div class="dash-stat-info">
+                                <span class="dash-stat-value" id="dashStatSearches">0</span>
+                                <span class="dash-stat-label" data-ar="عمليات بحث" data-en="Searches">عمليات بحث</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Dashboard Grid -->
+                    <div class="dash-grid">
+                        <!-- Upload Card (Large) -->
+                        <div class="dash-card dash-card-upload">
+                            <div class="dash-card-header">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                <h3 data-ar="تحميل ملف" data-en="Upload File">تحميل ملف</h3>
+                            </div>
+                            <div class="upload-zone" id="uploadZone">
+                                <div class="upload-icon">
+                                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="12" y1="11" x2="12" y2="17"></line>
+                                        <polyline points="9 14 12 11 15 14"></polyline>
+                                    </svg>
+                                </div>
+                                <h3 class="upload-title" data-ar="اسحب وأفلت ملفاً هنا" data-en="Drag & drop a file here">اسحب وأفلت ملفاً هنا</h3>
+                                <p class="upload-hint" data-ar="PDF, DOCX, TXT — أو اضغط للاختيار" data-en="PDF, DOCX, TXT — or click to browse">PDF, DOCX, TXT — أو اضغط للاختيار</p>
+                                <div class="upload-formats">
+                                    <span class="format-badge">PDF</span>
+                                    <span class="format-badge">DOCX</span>
+                                    <span class="format-badge">TXT</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions Card -->
+                        <div class="dash-card dash-card-actions">
+                            <div class="dash-card-header">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                                <h3 data-ar="إجراءات سريعة" data-en="Quick Actions">إجراءات سريعة</h3>
+                            </div>
+                            <div class="dash-actions-list">
+                                <button class="dash-action-btn" data-page="project">
+                                    <div class="dash-action-icon">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                                    </div>
+                                    <div class="dash-action-text">
+                                        <span class="dash-action-name" data-ar="مشروع جديد" data-en="New Project">مشروع جديد</span>
+                                        <span class="dash-action-desc" data-ar="بناء مدوّنة أو تحليل مقارن" data-en="Build corpus or compare texts">بناء مدوّنة أو تحليل مقارن</span>
+                                    </div>
+                                    <svg class="dash-action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                                </button>
+                                <button class="dash-action-btn" id="dashActionBrowse">
+                                    <div class="dash-action-icon">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                                    </div>
+                                    <div class="dash-action-text">
+                                        <span class="dash-action-name" data-ar="البحث في نص" data-en="Search in text">البحث في نص</span>
+                                        <span class="dash-action-desc" data-ar="افتح ملفاً وابحث عن كلمة" data-en="Open a file and search for a word">افتح ملفاً وابحث عن كلمة</span>
+                                    </div>
+                                    <svg class="dash-action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                                </button>
+                                <button class="dash-action-btn" data-page="results">
+                                    <div class="dash-action-icon">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                                    </div>
+                                    <div class="dash-action-text">
+                                        <span class="dash-action-name" data-ar="عرض النتائج" data-en="View Results">عرض النتائج</span>
+                                        <span class="dash-action-desc" data-ar="تكرارات وتحليل تداولي ورسوم" data-en="Frequencies, pragmatic analysis & charts">تكرارات وتحليل تداولي ورسوم</span>
+                                    </div>
+                                    <svg class="dash-action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Capabilities Section -->
+                    <div class="dash-capabilities">
+                        <h3 class="dash-section-title" data-ar="قدرات التحليل" data-en="Analysis Capabilities">قدرات التحليل</h3>
+                        <div class="dash-cap-grid">
+                            <div class="dash-cap-card">
+                                <div class="dash-cap-icon">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                                </div>
+                                <h4 data-ar="تحليل التكرارات" data-en="Frequency Analysis">تحليل التكرارات</h4>
+                                <p data-ar="تحليل تكرارات الكلمات المعجمية مع استبعاد كلمات الوظيفة" data-en="Lexical word frequency analysis excluding function words">تحليل تكرارات الكلمات المعجمية مع استبعاد كلمات الوظيفة</p>
+                            </div>
+                            <div class="dash-cap-card">
+                                <div class="dash-cap-icon">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                </div>
+                                <h4 data-ar="تحليل تداولي" data-en="Pragmatic Analysis">تحليل تداولي</h4>
+                                <p data-ar="علامات خطاب، أفعال كلام، أدوات استفهام ونفي وتوكيد" data-en="Discourse markers, speech acts, questioning & emphasis">علامات خطاب، أفعال كلام، أدوات استفهام ونفي وتوكيد</p>
+                            </div>
+                            <div class="dash-cap-card">
+                                <div class="dash-cap-icon">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                </div>
+                                <h4 data-ar="معجم مخصص" data-en="Custom Lexicon">معجم مخصص</h4>
+                                <p data-ar="إنشاء معاجم بحثية مخصصة مع تحليل التلازم اللفظي" data-en="Create custom research lexicons with collocation analysis">إنشاء معاجم بحثية مخصصة مع تحليل التلازم اللفظي</p>
+                            </div>
+                            <div class="dash-cap-card">
+                                <div class="dash-cap-icon">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                                </div>
+                                <h4 data-ar="استخراج السياقات" data-en="Context Extraction">استخراج السياقات</h4>
+                                <p data-ar="البحث عن كلمة وعرض سياقاتها KWIC في النص" data-en="Search for a word and display its KWIC contexts">البحث عن كلمة وعرض سياقاتها KWIC في النص</p>
+                            </div>
+                            <div class="dash-cap-card">
+                                <div class="dash-cap-icon">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                                </div>
+                                <h4 data-ar="رسوم تفاعلية" data-en="Interactive Charts">رسوم تفاعلية</h4>
+                                <p data-ar="رسوم بيانية متنوعة: أعمدة، دائري، رادار، سحابة كلمات" data-en="Various charts: bar, pie, radar, word cloud">رسوم بيانية متنوعة: أعمدة، دائري، رادار، سحابة كلمات</p>
+                            </div>
+                            <div class="dash-cap-card">
+                                <div class="dash-cap-icon">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                </div>
+                                <h4 data-ar="تصدير متعدد" data-en="Multi-format Export">تصدير متعدد</h4>
+                                <p data-ar="تصدير النتائج بصيغ Excel, CSV, JSON, PDF" data-en="Export results in Excel, CSV, JSON, PDF formats">تصدير النتائج بصيغ Excel, CSV, JSON, PDF</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Privacy Footer -->
+                    <div class="dash-privacy">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span data-ar="جميع البيانات محلية — لا إرسال لخوادم خارجية" data-en="All data is local — nothing sent to external servers">جميع البيانات محلية — لا إرسال لخوادم خارجية</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Page (v5.0) -->
+            <div class="page" id="projectPage">
+                <div class="project-section">
+                    <!-- Step 1: Track Selection -->
+                    <div class="project-step" id="projectStep1">
+                        <h2 class="section-title project-title">مشروع جديد</h2>
+                        <p class="project-subtitle">اختر مسار العمل الذي يناسب بحثك</p>
+
+                        <div class="track-cards">
+                            <div class="track-card" data-track="corpus" id="trackCorpus">
+                                <div class="track-icon">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                                        <line x1="8" y1="7" x2="16" y2="7"/>
+                                        <line x1="8" y1="11" x2="14" y2="11"/>
+                                    </svg>
+                                </div>
+                                <h3 class="track-title">بناء مدوّنة لغوية</h3>
+                                <p class="track-desc">استيراد نصوص من مصادر متعددة وبناء كوربس مُهيكل ومُوسوم بالبيانات الوصفية</p>
+                                <ul class="track-features">
+                                    <li>تحميل أجزاء متعددة (1 – 99)</li>
+                                    <li>تقسيم وتوسيم تلقائي</li>
+                                    <li>تصنيف الأنماط الخطابية</li>
+                                    <li>تصدير كوربس مُهيكل</li>
+                                </ul>
+                            </div>
+
+                            <div class="track-card" data-track="analysis" id="trackAnalysis">
+                                <div class="track-icon">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <circle cx="11" cy="11" r="8"/>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                        <line x1="8" y1="11" x2="14" y2="11"/>
+                                        <line x1="11" y1="8" x2="11" y2="14"/>
+                                    </svg>
+                                </div>
+                                <h3 class="track-title">تحليل تداولي</h3>
+                                <p class="track-desc">تطبيق معايير تداولية على مدوّنة لتصفية النصوص وتحليلها إحصائياً</p>
+                                <ul class="track-features">
+                                    <li>معايير مدمجة (Searle, Grice, Thomas...)</li>
+                                    <li>معايير مخصصة (قوائم معجمية + Regex)</li>
+                                    <li>سمات مركّبة (AND / OR)</li>
+                                    <li>إحصائيات ولوحة معلومات</li>
+                                </ul>
+                            </div>
+
+                            <div class="track-card" data-track="both" id="trackBoth">
+                                <div class="track-icon">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                    </svg>
+                                </div>
+                                <h3 class="track-title">بناء + تحليل</h3>
+                                <p class="track-desc">بناء المدوّنة اللغوية ثم تحليلها تداولياً في مشروع واحد متكامل</p>
+                                <ul class="track-features">
+                                    <li>المسار الأول: بناء الكوربس</li>
+                                    <li>المسار الثاني: التحليل التداولي</li>
+                                    <li>مخرجات شاملة (Excel 5 أوراق)</li>
+                                    <li>توثيق منهجي تلقائي</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="project-actions-row">
+                            <button class="btn-secondary" id="btnOpenProject">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> فتح مشروع سابق
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Project Setup -->
+                    <div class="project-step" id="projectStep2" style="display:none;">
+                        <h2 class="section-title project-title">إعداد المشروع</h2>
+
+                        <div class="project-form">
+                            <div class="form-group">
+                                <label class="form-label">اسم المشروع</label>
+                                <input type="text" class="form-input" id="projectName" placeholder="مثال: مدوّنة الفرائد من أقوال زايد" dir="rtl">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">وصف المشروع (اختياري)</label>
+                                <textarea class="form-input form-textarea" id="projectDesc" placeholder="وصف مختصر للمشروع والهدف البحثي" dir="rtl"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">المسار المختار</label>
+                                <div class="selected-track-badge" id="selectedTrackBadge"></div>
+                            </div>
+                        </div>
+
+                        <h3 class="subsection-title">أجزاء المدوّنة</h3>
+                        <p class="subsection-desc">أضف ملفات أجزاء المدوّنة (يمكنك إضافة من 1 إلى 99 جزءاً)</p>
+
+                        <div class="parts-upload-zone" id="partsUploadZone">
+                            <div class="upload-icon-small">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                            </div>
+                            <span>اسحب الملفات هنا أو اضغط للاختيار</span>
+                            <span class="upload-formats">PDF, DOCX, TXT, MD</span>
+                        </div>
+
+                        <div class="parts-list" id="partsList">
+                            <!-- Parts will be added here dynamically -->
+                        </div>
+
+                        <div class="parts-summary" id="partsSummary" style="display:none;">
+                            <div class="summary-item">
+                                <span class="summary-label">عدد الأجزاء:</span>
+                                <span class="summary-value" id="partsCount">0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">الحجم الإجمالي:</span>
+                                <span class="summary-value" id="totalSize">0</span>
+                            </div>
+                        </div>
+
+                        <div class="project-actions">
+                            <button class="btn-back" id="btnBackToStep1">
+                                <span>→</span> رجوع
+                            </button>
+                            <button class="btn-primary" id="btnCreateProject" disabled>
+                                <span>✨</span> إنشاء المشروع ومعالجة الأجزاء
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Processing Progress -->
+                    <div class="project-step" id="projectStep3" style="display:none;">
+                        <h2 class="section-title project-title">جارٍ المعالجة...</h2>
+
+                        <div class="processing-container">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="corpusProgressBar" style="width: 0%"></div>
+                            </div>
+                            <p class="progress-text" id="progressText">جارٍ تحميل الجزء الأول...</p>
+
+                            <div class="processing-log" id="processingLog">
+                                <!-- Processing messages appear here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Project Dashboard -->
+                    <div class="project-step" id="projectStep4" style="display:none;">
+                        <h2 class="section-title project-title">لوحة المشروع</h2>
+
+                        <div class="dashboard-grid">
+                            <div class="dashboard-card">
+                                <div class="dashboard-number" id="dashTotalTexts">0</div>
+                                <div class="dashboard-label">إجمالي النصوص</div>
+                            </div>
+                            <div class="dashboard-card">
+                                <div class="dashboard-number" id="dashTotalWords">0</div>
+                                <div class="dashboard-label">إجمالي الكلمات</div>
+                            </div>
+                            <div class="dashboard-card">
+                                <div class="dashboard-number" id="dashTotalParts">0</div>
+                                <div class="dashboard-label">عدد الأجزاء</div>
+                            </div>
+                            <div class="dashboard-card" id="dashPassedCard" style="display:none;">
+                                <div class="dashboard-number" id="dashPassedTexts">0</div>
+                                <div class="dashboard-label">النصوص المُجتازة</div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-parts-table">
+                            <h3 class="subsection-title">توزيع الأجزاء</h3>
+                            <table class="parts-table" id="dashPartsTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>اسم الجزء</th>
+                                        <th>عدد النصوص</th>
+                                        <th>عدد الكلمات</th>
+                                        <th>الحالة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashPartsBody"></tbody>
+                            </table>
+                        </div>
+
+                        <div class="dashboard-actions">
+                            <button class="btn-primary" id="btnExportCorpus">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> تصدير المدوّنة (Excel)
+                            </button>
+                            <button class="btn-secondary" id="btnAnalyzeCorpus">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> بدء التحليل التداولي
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Criteria Configuration -->
+                    <div class="project-step" id="projectStep5" style="display:none;">
+                        <h2 class="section-title project-title">تكوين المعايير التحليلية</h2>
+
+                        <!-- Built-in Criteria -->
+                        <div class="criteria-section built-in-criteria">
+                            <h3 class="subsection-title">المعايير المدمجة</h3>
+                            <p class="subsection-desc">معايير مستندة إلى أُطر نظرية معتمدة في التداولية — فعّل أو عطّل حسب حاجتك</p>
+
+                            <div class="criteria-cards-grid">
+                                <div class="criteria-card" data-criterion="searle">
+                                    <div class="criteria-card-icon-badge">
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                    </div>
+                                    <div class="criteria-card-header">
+                                        <div class="criteria-card-info">
+                                            <h4 class="criteria-card-title">Searle 1969 — القصدية</h4>
+                                            <span class="criteria-card-type">keyword_exclusion</span>
+                                        </div>
+                                        <label class="criteria-toggle">
+                                            <input type="checkbox" id="criterionSearle" checked>
+                                            <span class="criteria-toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="criteria-card-desc">يستبعد النصوص التي تحتوي على أنماط غير قصدية (رسالة، برقية، تهنئة، تعزية)</p>
+                                    <div class="criteria-card-detail">
+                                        <span class="criteria-detail-label">الكلمات المستبعدة:</span>
+                                        <span class="criteria-detail-value">رسالة، برقية، تهنئة، تعزية</span>
+                                    </div>
+                                </div>
+
+                                <div class="criteria-card" data-criterion="grice">
+                                    <div class="criteria-card-icon-badge">
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    </div>
+                                    <div class="criteria-card-header">
+                                        <div class="criteria-card-info">
+                                            <h4 class="criteria-card-title">Grice 1975 — التعاون</h4>
+                                            <span class="criteria-card-type">min_words</span>
+                                        </div>
+                                        <label class="criteria-toggle">
+                                            <input type="checkbox" id="criterionGrice" checked>
+                                            <span class="criteria-toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="criteria-card-desc">يشترط حدًا أدنى من الكلمات لضمان كفاية السياق التعاوني</p>
+                                    <div class="criteria-card-detail">
+                                        <span class="criteria-detail-label">الحد الأدنى:</span>
+                                        <span class="criteria-detail-value">30 كلمة</span>
+                                    </div>
+                                </div>
+
+                                <div class="criteria-card" data-criterion="thomas">
+                                    <div class="criteria-card-icon-badge">
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                    </div>
+                                    <div class="criteria-card-header">
+                                        <div class="criteria-card-info">
+                                            <h4 class="criteria-card-title">Thomas 1995 — اكتمال النص</h4>
+                                            <span class="criteria-card-type">regex</span>
+                                        </div>
+                                        <label class="criteria-toggle">
+                                            <input type="checkbox" id="criterionThomas" checked>
+                                            <span class="criteria-toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="criteria-card-desc">يتحقق من اكتمال البنية النحوية للنص (وجود نمط فعل + فاعل)</p>
+                                    <div class="criteria-card-detail">
+                                        <span class="criteria-detail-label">النمط المطلوب:</span>
+                                        <span class="criteria-detail-value" dir="ltr">فعل + فاعل</span>
+                                    </div>
+                                </div>
+
+                                <div class="criteria-card" data-criterion="austin">
+                                    <div class="criteria-card-icon-badge">
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg>
+                                    </div>
+                                    <div class="criteria-card-header">
+                                        <div class="criteria-card-info">
+                                            <h4 class="criteria-card-title">Austin 1962 — الأفعال الكلامية</h4>
+                                            <span class="criteria-card-type">lexical_density</span>
+                                        </div>
+                                        <label class="criteria-toggle">
+                                            <input type="checkbox" id="criterionAustin" checked>
+                                            <span class="criteria-toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="criteria-card-desc">يتحقق من وجود أفعال كلامية (إنجازية، توجيهية، تقريرية) في النص</p>
+                                    <div class="criteria-card-detail">
+                                        <span class="criteria-detail-label">القياس:</span>
+                                        <span class="criteria-detail-value">وجود أفعال الكلام</span>
+                                    </div>
+                                </div>
+
+                                <div class="criteria-card" data-criterion="brownLevinson">
+                                    <div class="criteria-card-icon-badge">
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                                    </div>
+                                    <div class="criteria-card-header">
+                                        <div class="criteria-card-info">
+                                            <h4 class="criteria-card-title">Brown & Levinson 1987 — التأدب</h4>
+                                            <span class="criteria-card-type">lexical_density</span>
+                                        </div>
+                                        <label class="criteria-toggle">
+                                            <input type="checkbox" id="criterionBrownLevinson" checked>
+                                            <span class="criteria-toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="criteria-card-desc">يتحقق من وجود علامات التأدب والتلطف في الخطاب</p>
+                                    <div class="criteria-card-detail">
+                                        <span class="criteria-detail-label">القياس:</span>
+                                        <span class="criteria-detail-value">علامات التأدب اللغوي</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Criteria Builder -->
+                        <div class="criteria-section custom-criteria-builder">
+                            <h3 class="subsection-title">إضافة معيار مخصص</h3>
+                            <p class="subsection-desc">أنشئ معاييرك الخاصة لتصفية النصوص حسب احتياجاتك البحثية</p>
+
+                            <div class="custom-criteria-form">
+                                <div class="form-group">
+                                    <label class="form-label">اسم المعيار</label>
+                                    <input type="text" class="form-input" id="customCriterionName" placeholder="مثال: استبعاد العناوين القصيرة" dir="rtl">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">نوع المعيار</label>
+                                    <select class="form-input" id="customCriterionType">
+                                        <option value="">— اختر نوع المعيار —</option>
+                                        <option value="keyword_exclusion">استبعاد بالكلمات المفتاحية (keyword_exclusion)</option>
+                                        <option value="type_exclusion">استبعاد بنوع النص (type_exclusion)</option>
+                                        <option value="min_words">حد أدنى للكلمات (min_words)</option>
+                                        <option value="lexical_density">الكثافة المعجمية (lexical_density)</option>
+                                        <option value="regex">تعبير نمطي (regex)</option>
+                                        <option value="compound">معيار مركّب (compound)</option>
+                                    </select>
+                                </div>
+
+                                <!-- Dynamic form area — changes based on selected type -->
+                                <div id="customCriterionDynamic" class="custom-criterion-dynamic">
+                                    <!-- keyword_exclusion fields -->
+                                    <div class="dynamic-field" data-for-type="keyword_exclusion" style="display:none;">
+                                        <div class="form-group">
+                                            <label class="form-label">الكلمات المفتاحية (كلمة في كل سطر)</label>
+                                            <textarea class="form-input form-textarea" id="customKeywords" placeholder="رسالة&#10;برقية&#10;إعلان" dir="rtl" rows="4"></textarea>
+                                        </div>
+                                    </div>
+
+                                    <!-- type_exclusion fields -->
+                                    <div class="dynamic-field" data-for-type="type_exclusion" style="display:none;">
+                                        <div class="form-group">
+                                            <label class="form-label">أنواع النصوص المستبعدة (نوع في كل سطر)</label>
+                                            <textarea class="form-input form-textarea" id="customExcludedTypes" placeholder="شعر&#10;خطبة" dir="rtl" rows="4"></textarea>
+                                        </div>
+                                    </div>
+
+                                    <!-- min_words fields -->
+                                    <div class="dynamic-field" data-for-type="min_words" style="display:none;">
+                                        <div class="form-group">
+                                            <label class="form-label">الحد الأدنى لعدد الكلمات</label>
+                                            <input type="number" class="form-input" id="customMinWords" placeholder="30" min="1" max="10000">
+                                        </div>
+                                    </div>
+
+                                    <!-- lexical_density fields -->
+                                    <div class="dynamic-field" data-for-type="lexical_density" style="display:none;">
+                                        <div class="form-group">
+                                            <label class="form-label">الحد الأدنى للكثافة المعجمية (%)</label>
+                                            <input type="number" class="form-input" id="customLexicalDensity" placeholder="40" min="0" max="100" step="1">
+                                        </div>
+                                    </div>
+
+                                    <!-- regex fields -->
+                                    <div class="dynamic-field" data-for-type="regex" style="display:none;">
+                                        <div class="form-group">
+                                            <label class="form-label">التعبير النمطي (Regex)</label>
+                                            <input type="text" class="form-input" id="customRegex" placeholder="مثال: ^(قال|أمر|نهى)" dir="ltr">
+                                        </div>
+                                    </div>
+
+                                    <!-- compound fields -->
+                                    <div class="dynamic-field" data-for-type="compound" style="display:none;">
+                                        <div class="form-group">
+                                            <label class="form-label">العملية المنطقية</label>
+                                            <select class="form-input" id="customCompoundOperator">
+                                                <option value="AND">AND — يجب تحقق جميع المعايير</option>
+                                                <option value="OR">OR — يكفي تحقق معيار واحد</option>
+                                            </select>
+                                        </div>
+                                        <p class="subsection-desc">سيتم ربط المعايير الفرعية المحددة أدناه بالعملية المختارة</p>
+                                    </div>
+                                </div>
+
+                                <button class="btn-secondary" id="btnAddCustomCriterion">
+                                    <span>➕</span> إضافة المعيار
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Active Criteria List -->
+                        <div class="criteria-section">
+                            <h3 class="subsection-title">المعايير النشطة</h3>
+                            <div class="active-criteria-list" id="activeCriteriaList">
+                                <p class="empty-state-text" id="noCriteriaMsg">لم تُضف معايير مخصصة بعد. المعايير المدمجة المفعّلة أعلاه ستُطبَّق تلقائيًا.</p>
+                                <!-- Active criteria items rendered here dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="project-actions">
+                            <button class="btn-back" id="btnBackToStep4FromCriteria">
+                                <span>→</span> رجوع للوحة المشروع
+                            </button>
+                            <button class="btn-primary" id="btnApplyCriteria">
+                                <span>✅</span> تطبيق المعايير
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 6: Text Browser -->
+                    <div class="project-step" id="projectStep6" style="display:none;">
+                        <h2 class="section-title project-title">متصفح نصوص المدونة</h2>
+
+                        <!-- Filter Bar -->
+                        <div class="text-browser">
+                            <div class="text-filter-bar">
+                                <div class="filter-group">
+                                    <input type="text" class="form-input filter-input" id="textSearchInput" placeholder="بحث في النصوص..." dir="rtl">
+                                </div>
+                                <div class="filter-group">
+                                    <select class="form-input filter-select" id="textTypeFilter">
+                                        <option value="">جميع الأنماط</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <select class="form-input filter-select" id="textPartFilter">
+                                        <option value="">جميع الأجزاء</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <select class="form-input filter-select" id="textStatusFilter">
+                                        <option value="all">الكل</option>
+                                        <option value="passed">مُجتاز</option>
+                                        <option value="excluded">مُستبعد</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Results Count -->
+                            <div class="text-results-count">
+                                <span id="textResultsCount">0</span> نص
+                            </div>
+
+                            <!-- Text Table -->
+                            <div class="text-table-container">
+                                <table class="text-table" id="textBrowserTable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>الجزء</th>
+                                            <th>النمط</th>
+                                            <th>عدد الكلمات</th>
+                                            <th>العنوان</th>
+                                            <th>الحالة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="textBrowserBody">
+                                        <!-- Text rows rendered dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Expanded Text Content (hidden by default) -->
+                            <div class="text-expanded" id="textExpandedView" style="display:none;">
+                                <div class="text-expanded-header">
+                                    <h4 class="text-expanded-title" id="expandedTextTitle"></h4>
+                                    <button class="btn-close-expanded" id="btnCloseExpanded">✕</button>
+                                </div>
+                                <div class="text-expanded-content" id="expandedTextContent" dir="rtl"></div>
+                            </div>
+
+                            <!-- Pagination -->
+                            <div class="text-pagination" id="textPagination">
+                                <button class="btn-page" id="btnPrevPage" disabled>
+                                    <span>→</span> السابق
+                                </button>
+                                <span class="page-info" id="pageInfo">صفحة 1 من 1</span>
+                                <button class="btn-page" id="btnNextPage" disabled>
+                                    التالي <span>←</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="project-actions">
+                            <button class="btn-back" id="btnBackToStep4FromBrowser">
+                                <span>→</span> رجوع للوحة المشروع
+                            </button>
+                            <button class="btn-primary" id="btnExportTextBrowser">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> تصدير Excel
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- About Page -->
+            <div class="page" id="aboutPage">
+                <div class="info-section academic-about">
+                    <div class="about-header-academic">
+                        <div class="about-logo">
+                            <span class="sabr-logo-large">سَبْر</span>
+                            <span class="sabr-logo-subtitle">Sabr — Pragmatic Discourse Analyzer</span>
+                        </div>
+                        <div class="about-version-badge">الإصدار 5.0</div>
+                    </div>
+
+                    <div class="about-description-academic">
+                        <h2 class="academic-heading">محلل الخطاب التداولي</h2>
+                        <p class="academic-intro">أداة بحثية متخصصة في التحليل اللغوي والتداولي والمقارن للنصوص العربية والإنجليزية. صُمّمت لتمكين الباحثين من بناء مدوّنات لغوية وتطبيق معايير تداولية مبنية على أسس نظرية رصينة.</p>
+                    </div>
+
+                    <div class="about-capabilities">
+                        <h3 class="academic-subheading">القدرات البحثية</h3>
+                        <div class="capabilities-grid">
+                            <div class="capability-card">
+                                <div class="capability-icon">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                </div>
+                                <h4>بناء المدوّنات اللغوية</h4>
+                                <p>استيراد نصوص من مصادر متعددة (PDF, DOCX, TXT) وبناء كوربس مُهيكل ومُوسوم بالبيانات الوصفية مع دعم حتى 99 جزءاً</p>
+                            </div>
+                            <div class="capability-card">
+                                <div class="capability-icon">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                </div>
+                                <h4>التحليل التداولي</h4>
+                                <p>معايير تحليلية مبنية على نظريات Searle, Grice, Thomas, Austin, Brown & Levinson مع إمكانية بناء معايير مخصصة</p>
+                            </div>
+                            <div class="capability-card">
+                                <div class="capability-icon">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                                </div>
+                                <h4>التحليل الإحصائي</h4>
+                                <p>تحليل تكرارات معجمية، كثافة نصية، توزيع أنماط خطابية، تصدير Excel احترافي بـ 5 أوراق عمل</p>
+                            </div>
+                            <div class="capability-card">
+                                <div class="capability-icon">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                </div>
+                                <h4>التحليل المقارن</h4>
+                                <p>17 بُعداً تحليلياً تداولياً مع رسوم بيانية تفاعلية وتصدير متعدد الصيغ</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="about-theories">
+                        <h3 class="academic-subheading">الأسس النظرية</h3>
+                        <div class="theories-list">
+                            <div class="theory-item">
+                                <span class="theory-author">Searle (1969)</span>
+                                <span class="theory-name">نظرية الأفعال الكلامية — القصدية</span>
+                            </div>
+                            <div class="theory-item">
+                                <span class="theory-author">Grice (1975)</span>
+                                <span class="theory-name">مبدأ التعاون ومسلّمات المحادثة</span>
+                            </div>
+                            <div class="theory-item">
+                                <span class="theory-author">Austin (1962)</span>
+                                <span class="theory-name">نظرية الأفعال الكلامية</span>
+                            </div>
+                            <div class="theory-item">
+                                <span class="theory-author">Thomas (1995)</span>
+                                <span class="theory-name">المعنى في التفاعل</span>
+                            </div>
+                            <div class="theory-item">
+                                <span class="theory-author">Brown & Levinson (1987)</span>
+                                <span class="theory-name">نظرية التأدب اللغوي</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="about-footer-academic">
+                        <p>© 2026 — سَبْر | جميع الحقوق محفوظة | الإصدار 5.0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Developer Page -->
+            <div class="page" id="developerPage">
+                <div class="info-section academic-developer">
+                    <div class="developer-profile-academic">
+                        <div class="developer-photo-container">
+                            <img src="assets/muna-photo.jpg" alt="منى الكندي" class="developer-photo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="developer-photo-fallback" style="display:none;">
+                                <span>م.ك</span>
+                            </div>
+                        </div>
+
+                        <div class="developer-info-academic">
+                            <h2 class="developer-name-academic">منى الكندي</h2>
+                            <h3 class="developer-title-academic">Muna Al-Kindi</h3>
+
+                            <div class="developer-roles">
+                                <span class="role-badge role-researcher">باحثة لسانيات</span>
+                                <span class="role-badge role-developer">مطورة تطبيقات</span>
+                                <span class="role-badge role-founder">مؤسسة مركز AIGO</span>
+                            </div>
+
+                            <div class="developer-affiliation">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1 2 3 6 3s6-2 6-3v-5"/></svg>
+                                <span>جامعة الإمارات العربية المتحدة</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="developer-bio-academic">
+                        <h3 class="academic-subheading">نبذة</h3>
+                        <p>باحثة في مجال اللسانيات التطبيقية والتداولية بجامعة الإمارات العربية المتحدة. تجمع بين البحث الأكاديمي في تحليل الخطاب وتطوير الأدوات الرقمية المتخصصة لخدمة الباحثين. مؤسسة مركز AIGO للذكاء الاصطناعي في التعليم، ومطورة لتطبيق سَبْر — أول أداة تحليل تداولي متكاملة للنصوص العربية.</p>
+                    </div>
+
+                    <div class="developer-contact-academic">
+                        <h3 class="academic-subheading">التواصل</h3>
+                        <div class="contact-cards">
+                            <a href="mailto:munalkendi@gmail.com" class="contact-card-academic">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                <span>munalkendi@gmail.com</span>
+                            </a>
+                            <a href="tel:+971503003481" class="contact-card-academic">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                <span dir="ltr">+971 50 300 3481</span>
+                            </a>
+                            <a href="https://twitter.com/munalkindi" class="contact-card-academic" target="_blank">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+                                <span>@munalkindi</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Page -->
+            <div class="page" id="resultsPage">
+                <div class="results-container">
+                    <!-- File Info Card -->
+                    <div class="results-header">
+                        <div class="file-info-card">
+                            <h3>معلومات الملف</h3>
+                            <div class="file-details">
+                                <div class="detail-row">
+                                    <span class="detail-label">اسم الملف:</span>
+                                    <span class="detail-value" id="resultFileName">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">الحجم:</span>
+                                    <span class="detail-value" id="resultFileSize">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">إجمالي الكلمات:</span>
+                                    <span class="detail-value" id="resultTotalWords">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">الكلمات المعجمية:</span>
+                                    <span class="detail-value" id="resultContentWords">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">الكلمات الفريدة:</span>
+                                    <span class="detail-value" id="resultUniqueWords">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">لغة النص:</span>
+                                    <span class="detail-value" id="resultLanguage">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Search -->
+                        <div class="search-card">
+                            <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-inline-end:0.4rem;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>البحث عن كلمة</h3>
+                            <div class="search-box">
+                                <input type="text" id="resultSearchInput" placeholder="أدخل كلمة للبحث...">
+                                <button id="resultSearchBtn" class="search-button">بحث</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="results-tabs">
+                        <div class="tabs-header">
+                            <button class="tab-button active" data-tab="frequencies"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg> التكرارات</button>
+                            <button class="tab-button" data-tab="pragmatic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> التحليل التداولي</button>
+                            <button class="tab-button" data-tab="lexicon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> المعجم المخصص</button>
+                            <button class="tab-button" data-tab="comparative"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg> التحليل المقارن</button>
+                            <button class="tab-button" data-tab="contexts"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> السياقات</button>
+                            <button class="tab-button" data-tab="charts"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><polyline points="18 20 18 4"/><polyline points="6 20 6 16"/><path d="M2 20h20"/></svg> الرسوم البيانية</button>
+                            <button class="tab-button" data-tab="settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> الإعدادات</button>
+                        </div>
+
+                        <!-- ======= FREQUENCIES TAB ======= -->
+                        <div class="tab-panel active" id="frequenciesPanel">
+                            <!-- Word Cloud -->
+                            <div class="word-cloud-container" id="wordCloudContainer"></div>
+                            <div class="panel-header">
+                                <span>عدد النتائج: <strong id="freqCount">0</strong></span>
+                                <div class="panel-actions">
+                                    <input type="text" id="freqFilter" placeholder="فلتر..." class="filter-input">
+                                    <button id="exportBtn" class="export-button">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                        <span>تصدير</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table class="results-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>الكلمة</th>
+                                            <th>التكرار</th>
+                                            <th>النسبة %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="frequenciesBody">
+                                        <tr><td colspan="4" class="no-data">لا توجد نتائج بعد</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ======= PRAGMATIC ANALYSIS TAB ======= -->
+                        <div class="tab-panel" id="pragmaticPanel">
+                            <!-- Pragmatic Overview Cards -->
+                            <div class="pragma-overview" id="pragmaOverview">
+                                <div class="pragma-overview-grid">
+                                    <div class="pragma-ov-card" data-pragma-cat="discourse_markers">
+                                        <div class="pragma-ov-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                        </div>
+                                        <div class="pragma-ov-info">
+                                            <h4 data-ar="علامات الخطاب" data-en="Discourse Markers">علامات الخطاب</h4>
+                                            <span class="pragma-ov-count" id="pragmaCountDM">0</span>
+                                        </div>
+                                        <p class="pragma-ov-desc" data-ar="أدوات الربط والانتقال: لكن، إذن، بالتالي، من ناحية أخرى" data-en="Connectives & transitions: but, therefore, however">أدوات الربط والانتقال: لكن، إذن، بالتالي، من ناحية أخرى</p>
+                                    </div>
+                                    <div class="pragma-ov-card" data-pragma-cat="speech_acts">
+                                        <div class="pragma-ov-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                        </div>
+                                        <div class="pragma-ov-info">
+                                            <h4 data-ar="أفعال الكلام" data-en="Speech Acts">أفعال الكلام</h4>
+                                            <span class="pragma-ov-count" id="pragmaCountSA">0</span>
+                                        </div>
+                                        <p class="pragma-ov-desc" data-ar="إنجازية، توجيهية، تقريرية، تعبيرية، إعلانية (Searle)" data-en="Assertives, directives, commissives, expressives, declarations">إنجازية، توجيهية، تقريرية، تعبيرية، إعلانية (Searle)</p>
+                                    </div>
+                                    <div class="pragma-ov-card" data-pragma-cat="interrogative">
+                                        <div class="pragma-ov-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                        </div>
+                                        <div class="pragma-ov-info">
+                                            <h4 data-ar="أدوات الاستفهام" data-en="Interrogatives">أدوات الاستفهام</h4>
+                                            <span class="pragma-ov-count" id="pragmaCountQ">0</span>
+                                        </div>
+                                        <p class="pragma-ov-desc" data-ar="هل، ما، من، أين، كيف، لماذا، متى، أيّ" data-en="What, who, where, how, why, when, which">هل، ما، من، أين، كيف، لماذا، متى، أيّ</p>
+                                    </div>
+                                    <div class="pragma-ov-card" data-pragma-cat="negation">
+                                        <div class="pragma-ov-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                                        </div>
+                                        <div class="pragma-ov-info">
+                                            <h4 data-ar="أدوات النفي" data-en="Negation">أدوات النفي</h4>
+                                            <span class="pragma-ov-count" id="pragmaCountNeg">0</span>
+                                        </div>
+                                        <p class="pragma-ov-desc" data-ar="لا، لم، لن، ما، ليس، لمّا، غير، عدم" data-en="Negation particles and patterns">لا، لم، لن، ما، ليس، لمّا، غير، عدم</p>
+                                    </div>
+                                    <div class="pragma-ov-card" data-pragma-cat="emphasis">
+                                        <div class="pragma-ov-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                                        </div>
+                                        <div class="pragma-ov-info">
+                                            <h4 data-ar="أدوات التوكيد" data-en="Emphasis">أدوات التوكيد</h4>
+                                            <span class="pragma-ov-count" id="pragmaCountEmp">0</span>
+                                        </div>
+                                        <p class="pragma-ov-desc" data-ar="إنّ، قد، لام التوكيد، نون التوكيد، أنّ" data-en="Emphasis particles: indeed, certainly, truly">إنّ، قد، لام التوكيد، نون التوكيد، أنّ</p>
+                                    </div>
+                                    <div class="pragma-ov-card" data-pragma-cat="implicature">
+                                        <div class="pragma-ov-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        </div>
+                                        <div class="pragma-ov-info">
+                                            <h4 data-ar="السمع المتضمن" data-en="Implicature">السمع المتضمن</h4>
+                                            <span class="pragma-ov-count" id="pragmaCountImp">0</span>
+                                        </div>
+                                        <p class="pragma-ov-desc" data-ar="الاستلزام الحواري والمعاني الضمنية (Grice)" data-en="Conversational implicature & implicit meanings">الاستلزام الحواري والمعاني الضمنية (Grice)</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Results Header -->
+                            <div class="panel-header">
+                                <span>إجمالي العناصر التداولية: <strong id="pragmaticTotal">0</strong></span>
+                                <button id="exportPragmaticBtn" class="export-button">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    <span data-ar="تصدير التحليل التداولي" data-en="Export pragmatic analysis">تصدير التحليل التداولي</span>
+                                </button>
+                            </div>
+                            <div id="pragmaticResults" class="pragmatic-results">
+                                <div class="no-data" data-ar="قم بتحميل ملف لبدء التحليل التداولي" data-en="Upload a file to start pragmatic analysis">قم بتحميل ملف لبدء التحليل التداولي</div>
+                            </div>
+                        </div>
+
+                        <!-- ======= CUSTOM LEXICON TAB ======= -->
+                        <div class="tab-panel" id="lexiconPanel">
+                            <!-- Default Lexicons -->
+                            <div class="default-lexicons-section">
+                                <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-inline-end:0.4rem;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>المعاجم الجاهزة</h3>
+                                <p class="settings-desc">اختر معجمًا جاهزًا لتحليل النص، أو أنشئ معجمك المخصص أدناه</p>
+                                <div class="default-lexicons-grid" id="defaultLexiconsGrid">
+                                    <!-- Will be populated by JS -->
+                                </div>
+                                <div class="lexicon-actions" style="margin-top:0.5rem;">
+                                    <button id="loadDefaultLexiconBtn" class="btn-success">تحميل المعجم المحدد</button>
+                                    <button id="analyzeDefaultLexiconBtn" class="btn-primary">تحليل المعجم المحدد مباشرة</button>
+                                </div>
+                            </div>
+
+                            <hr style="margin: 1.5rem 0; border-color: #e5e7eb;">
+
+                            <!-- Lexicon Builder -->
+                            <div class="lexicon-builder">
+                                <h3>✏️ إنشاء معجم مخصص</h3>
+                                <div class="lexicon-form">
+                                    <div class="form-row">
+                                        <input type="text" id="lexiconCategoryName" placeholder="اسم الفئة (مثال: المعجم الإنساني)">
+                                        <button id="addCategoryBtn" class="btn-primary">إضافة فئة</button>
+                                    </div>
+                                    <div class="form-row">
+                                        <input type="text" id="lexiconWords" placeholder="الكلمات (مفصولة بفواصل: رحمة، تسامح، عطاء...)">
+                                        <select id="lexiconCategorySelect">
+                                            <option value="">اختر الفئة</option>
+                                        </select>
+                                        <button id="addWordsBtn" class="btn-primary">إضافة كلمات</button>
+                                    </div>
+                                </div>
+
+                                <!-- Categories Display -->
+                                <div id="lexiconCategories" class="lexicon-categories"></div>
+
+                                <!-- Action Buttons -->
+                                <div class="lexicon-actions">
+                                    <button id="analyzeLexiconBtn" class="btn-success">تحليل المعجم</button>
+                                    <button id="exportLexiconBtn" class="btn-secondary">تصدير المعجم</button>
+                                    <button id="importLexiconBtn" class="btn-secondary">📤 استيراد معجم</button>
+                                    <button id="clearLexiconBtn" class="btn-danger">🗑️ مسح الكل</button>
+                                </div>
+                            </div>
+
+                            <!-- Lexicon Results -->
+                            <div id="lexiconResults" class="lexicon-results" style="display:none;">
+                                <h3>نتائج تحليل المعجم</h3>
+                                <!-- Summary Chart -->
+                                <div class="chart-wrapper" style="height:300px; margin-bottom:1rem;">
+                                    <canvas id="lexiconChart"></canvas>
+                                </div>
+                                <!-- Detailed Results -->
+                                <div id="lexiconDetailedResults"></div>
+                            </div>
+
+                            <!-- Collocation Section -->
+                            <div class="collocation-section">
+                                <h3>تحليل التلازم</h3>
+                                <div class="form-row">
+                                    <input type="text" id="collocationWord" placeholder="أدخل كلمة لتحليل التلازم...">
+                                    <select id="collocationWindow">
+                                        <option value="3">3 كلمات</option>
+                                        <option value="5" selected>5 كلمات</option>
+                                        <option value="7">7 كلمات</option>
+                                    </select>
+                                    <button id="analyzeCollocationBtn" class="btn-primary">تحليل</button>
+                                </div>
+                                <div id="collocationResults"></div>
+                            </div>
+                        </div>
+
+                        <!-- ======= COMPARATIVE ANALYSIS TAB ======= -->
+                        <div class="tab-panel" id="comparativePanel">
+                            <div class="panel-header">
+                                <span>التحليل المقارن التداولي — <strong>17 بُعدًا تحليليًا</strong></span>
+                                <button id="exportComparativeBtn" class="export-button">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    <span>تصدير التحليل المقارن</span>
+                                </button>
+                            </div>
+
+                            <!-- Group filters -->
+                            <div class="comparative-filters">
+                                <button class="comp-filter-btn active" data-group="all">الكل</button>
+                                <button class="comp-filter-btn" data-group="identity">هوية المتكلم</button>
+                                <button class="comp-filter-btn" data-group="temporal">الزمن والفعل</button>
+                                <button class="comp-filter-btn" data-group="epistemic">الموقف المعرفي</button>
+                                <button class="comp-filter-btn" data-group="strategy">الاستراتيجية الخطابية</button>
+                            </div>
+
+                            <!-- Radar Chart -->
+                            <div class="chart-wrapper" style="height:350px; margin-bottom:1.5rem;">
+                                <canvas id="comparativeRadar"></canvas>
+                            </div>
+                            <div id="comparativeResults" class="comparative-results">
+                                <div class="no-data">قم بتحميل ملف لبدء التحليل المقارن التداولي</div>
+                            </div>
+                        </div>
+
+                        <!-- ======= CONTEXTS TAB ======= -->
+                        <div class="tab-panel" id="contextsPanel">
+                            <div class="panel-header">
+                                <span>عدد النتائج: <strong id="contextCount">0</strong></span>
+                            </div>
+                            <div class="search-box" style="margin-bottom: 1rem;">
+                                <input type="text" id="contextSearchInput" placeholder="أدخل كلمة لعرض سياقاتها في النص...">
+                                <button id="contextSearchBtn" class="search-button">بحث</button>
+                            </div>
+                            <p class="settings-desc">يمكنك أيضاً الضغط على أي كلمة في جدول التكرارات لعرض سياقاتها</p>
+                            <div class="contexts-container" id="contextsList">
+                                <div class="no-data">ابحث عن كلمة لعرض السياقات</div>
+                            </div>
+                        </div>
+
+                        <!-- ======= CHARTS TAB ======= -->
+                        <div class="tab-panel" id="chartsPanel">
+                            <div class="chart-controls">
+                                <div class="control-item">
+                                    <label>نوع الرسم:</label>
+                                    <select id="chartType">
+                                        <option value="bar">أعمدة عمودية</option>
+                                        <option value="horizontalBar">أعمدة أفقية</option>
+                                        <option value="pie">دائري</option>
+                                        <option value="line">خطي</option>
+                                        <option value="doughnut">دائري مفرغ</option>
+                                    </select>
+                                </div>
+                                <div class="control-item">
+                                    <label>عدد الكلمات:</label>
+                                    <select id="chartWordCount">
+                                        <option value="10">10</option>
+                                        <option value="20" selected>20</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </div>
+                                <div class="control-item">
+                                    <button id="downloadPNG" class="chart-download-btn">PNG</button>
+                                    <button id="downloadJPG" class="chart-download-btn">JPG</button>
+                                </div>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="frequencyChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- ======= SETTINGS TAB ======= -->
+                        <div class="tab-panel" id="settingsPanel">
+                            <div class="settings-section">
+                                <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-inline-end:0.4rem;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.28.46.73.81 1.25.93H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>كلمات الإيقاف (Stopwords)</h3>
+                                <p class="settings-desc">الكلمات المستبعدة من تحليل التكرارات (حروف الجر، العطف، إلخ)</p>
+                                <div class="form-row">
+                                    <input type="text" id="addStopwordInput" placeholder="أضف كلمة إيقاف جديدة...">
+                                    <button id="addStopwordBtn" class="btn-primary">إضافة</button>
+                                </div>
+                                <div class="stopwords-display" id="stopwordsDisplay"></div>
+                                <div class="settings-actions">
+                                    <button id="resetStopwordsBtn" class="btn-secondary">إعادة تعيين القائمة الافتراضية</button>
+                                    <button id="reanalyzeBtn" class="btn-success">🔄 إعادة التحليل</button>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h3>📏 حجم نافذة السياق</h3>
+                                <div class="form-row">
+                                    <label>عدد الكلمات قبل وبعد:</label>
+                                    <select id="contextWindowSize">
+                                        <option value="3">3</option>
+                                        <option value="5" selected>5</option>
+                                        <option value="7">7</option>
+                                        <option value="10">10</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
