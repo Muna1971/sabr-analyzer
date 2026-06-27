@@ -298,42 +298,60 @@ class CorpusManager {
             };
         }
 
+        // Build criteria columns map
+        const hasCriteria = this.project.analysis.results.length > 0;
+        const criteriaNames = hasCriteria
+            ? this.project.analysis.criteria.map(c => c.name)
+            : [];
+
         // xlsx-data: return structured data for Excel generation
         return {
-            // Sheet 1: Full corpus
-            corpus: this.project.corpus.texts.map(t => ({
-                '#': t.globalIndex,
-                'الجزء': t.partId,
-                'اسم الجزء': t.partName,
-                'النمط': t.discourseType || '',
-                'عدد الكلمات': t.wordCount,
-                'عنوان النص': t.title,
-                'المتن': t.content,
+            projectName: this.project.name || 'مشروع سَبْر',
+
+            // Sheet 1: Full corpus with criteria results and source file
+            corpus: this.project.corpus.texts.map(t => {
+                const row = {
+                    '#': t.globalIndex,
+                    'الجزء': t.partId,
+                    'الجزء ': t.partName,
+                    'النَّمط': t.discourseType || 'نص',
+                    'عدد الكلمات': t.wordCount
+                };
+
                 // Add criteria results if analysis was done
-                ...(this.project.analysis.results.length > 0 ? (() => {
+                if (hasCriteria) {
                     const result = this.project.analysis.results.find(r => r.textIndex === t.globalIndex);
-                    if (!result) return {};
-                    const obj = {};
-                    for (const [criterionId, passed] of Object.entries(result.criteriaResults)) {
-                        const criterion = this.project.analysis.criteria.find(c => c.id === criterionId);
-                        obj[criterion ? criterion.name : criterionId] = passed ? 'نعم' : 'لا';
+                    if (result) {
+                        for (const criterion of this.project.analysis.criteria) {
+                            row[criterion.name] = result.criteriaResults[criterion.id] ? 'نعم' : 'لا';
+                        }
+                        row['مُجتاز كاملاً'] = result.passedAll ? 'نعم' : 'لا';
+                    } else {
+                        for (const criterion of this.project.analysis.criteria) {
+                            row[criterion.name] = '—';
+                        }
+                        row['مُجتاز كاملاً'] = '—';
                     }
-                    obj['مُجتاز كاملاً'] = result.passedAll ? 'نعم' : 'لا';
-                    return obj;
-                })() : {})
-            })),
+                }
+
+                row['عنوان النص'] = t.title;
+                row['مَتن النص كاملاً'] = t.content;
+                row['ملف المصدر'] = (t.metadata && t.metadata.source) || '';
+
+                return row;
+            }),
 
             // Sheet 2: Statistics
             statistics: this._generateStatistics(),
 
-            // Sheet 3: Dashboard
-            dashboard: this._generateDashboard(),
-
-            // Sheet 4: Procedure guide (auto-generated from criteria)
+            // Sheet 3: Procedure guide
             procedureGuide: this._generateProcedureGuide(),
 
-            // Sheet 5: Methodology
-            methodology: this._generateMethodology()
+            // Sheet 4: Methodology
+            methodology: this._generateMethodology(),
+
+            // Sheet 5: Dashboard
+            dashboard: this._generateDashboard()
         };
     }
 
@@ -500,84 +518,187 @@ class CorpusManager {
      * Generate statistics data for Excel export
      */
     _generateStatistics() {
-        const stats = [];
         const corpus = this.project.corpus;
         const analysis = this.project.analysis;
+        const projectName = this.project.name || 'مشروع سَبْر';
+        const avgWords = corpus.totalTexts > 0 ? Math.round(corpus.totalWords / corpus.totalTexts) : 0;
+        const numTypes = Object.keys(corpus.discourseTypes).length;
 
-        stats.push({ section: 'الإحصاء العام', indicator: 'إجمالي عدد النصوص', value: corpus.totalTexts, percentage: '100%' });
-        if (analysis.statistics.passedTexts !== undefined) {
-            stats.push({ section: '', indicator: 'النصوص المُجتازة', value: analysis.statistics.passedTexts, percentage: analysis.statistics.passRate });
-            stats.push({ section: '', indicator: 'النصوص المستبعدة', value: analysis.statistics.excludedTexts, percentage: '' });
-        }
-        stats.push({ section: '', indicator: 'إجمالي الكلمات', value: corpus.totalWords, percentage: '' });
-        stats.push({ section: '', indicator: 'متوسط كلمات النص', value: corpus.totalTexts > 0 ? Math.round(corpus.totalWords / corpus.totalTexts) : 0, percentage: '' });
-
-        // Per-part distribution
-        stats.push({ section: 'التوزيع حسب الجزء', indicator: '', value: '', percentage: '' });
-        for (const part of this.project.parts) {
-            stats.push({
-                section: '',
-                indicator: part.name,
-                value: part.textsCount,
-                percentage: corpus.totalTexts > 0 ? ((part.textsCount / corpus.totalTexts) * 100).toFixed(1) + '%' : '0%'
-            });
-        }
-
-        // Discourse type distribution
-        stats.push({ section: 'التوزيع حسب النمط', indicator: '', value: '', percentage: '' });
-        for (const [type, count] of Object.entries(corpus.discourseTypes)) {
-            stats.push({
-                section: '',
-                indicator: type,
-                value: count,
-                percentage: corpus.totalTexts > 0 ? ((count / corpus.totalTexts) * 100).toFixed(1) + '%' : '0%'
-            });
-        }
-
-        return stats;
+        // Structured sections for richer output
+        return {
+            title: `التحليل الإحصائي لمدونة "${projectName}"`,
+            sections: [
+                {
+                    name: 'الإحصاء العام للمدونة',
+                    rows: [
+                        { indicator: 'إجمالي عدد النصوص', value: corpus.totalTexts.toLocaleString('ar-SA'), percentage: '100%' },
+                        ...(analysis.statistics.passedTexts !== undefined ? [
+                            { indicator: 'النصوص المُجتازة', value: String(analysis.statistics.passedTexts), percentage: analysis.statistics.passRate || '' },
+                            { indicator: 'النصوص المستبعدة', value: String(analysis.statistics.excludedTexts || (corpus.totalTexts - analysis.statistics.passedTexts)), percentage: '' }
+                        ] : []),
+                        { indicator: 'إجمالي الكلمات', value: corpus.totalWords.toLocaleString('ar-SA'), percentage: '' },
+                        { indicator: 'متوسط كلمات النص', value: avgWords.toLocaleString('ar-SA'), percentage: '' },
+                        { indicator: 'عدد الأجزاء', value: String(this.project.totalParts), percentage: '' },
+                        { indicator: 'الأنماط الخطابية', value: String(numTypes), percentage: '' }
+                    ]
+                },
+                {
+                    name: 'التوزيع حسب الجزء',
+                    rows: this.project.parts.map(p => ({
+                        indicator: p.name,
+                        value: String(p.textsCount),
+                        percentage: corpus.totalTexts > 0 ? ((p.textsCount / corpus.totalTexts) * 100).toFixed(2) + '%' : '0%',
+                        words: p.wordsCount ? p.wordsCount.toLocaleString('ar-SA') : ''
+                    }))
+                },
+                {
+                    name: 'التوزيع حسب النمط الخطابي',
+                    rows: Object.entries(corpus.discourseTypes)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([type, count]) => ({
+                            indicator: type,
+                            value: String(count),
+                            percentage: corpus.totalTexts > 0 ? ((count / corpus.totalTexts) * 100).toFixed(2) + '%' : '0%'
+                        }))
+                },
+                ...(analysis.criteria.length > 0 ? [{
+                    name: 'أثر المعايير على الاستبعاد',
+                    rows: analysis.criteria.map(c => {
+                        const impact = analysis.statistics.criteriaImpact ? analysis.statistics.criteriaImpact[c.id] : null;
+                        return {
+                            indicator: c.name,
+                            value: impact ? `اجتاز: ${impact.passed} | استُبعد: ${impact.excluded}` : '—',
+                            percentage: impact && corpus.totalTexts > 0 ? ((impact.excluded / corpus.totalTexts) * 100).toFixed(2) + '% استبعاد' : ''
+                        };
+                    })
+                }] : [])
+            ]
+        };
     }
 
     _generateDashboard() {
         const corpus = this.project.corpus;
         const analysis = this.project.analysis;
+        const avgWords = corpus.totalTexts > 0 ? Math.round(corpus.totalWords / corpus.totalTexts) : 0;
+        const numTypes = Object.keys(corpus.discourseTypes).length;
+
         return {
-            totalTexts: corpus.totalTexts,
-            passedTexts: analysis.statistics.passedTexts || 0,
-            passRate: analysis.statistics.passRate || '—',
-            totalWords: corpus.totalWords,
-            avgWordsPerText: corpus.totalTexts > 0 ? Math.round(corpus.totalWords / corpus.totalTexts) : 0,
-            discourseTypes: Object.keys(corpus.discourseTypes).length,
-            partsCount: this.project.totalParts,
-            criteriaCount: analysis.criteria.length
+            title: `لوحة المعلومات — مدونة "${this.project.name || 'مشروع سَبْر'}"`,
+            summary: {
+                'إجمالي النصوص': String(corpus.totalTexts),
+                'النصوص المُجتازة': analysis.statistics.passedTexts !== undefined ? String(analysis.statistics.passedTexts) : '—',
+                'نسبة الاجتياز': analysis.statistics.passRate || '—',
+                'إجمالي الكلمات': corpus.totalWords.toLocaleString('ar-SA'),
+                'متوسط كلمات النص': avgWords.toLocaleString('ar-SA'),
+                'الأنماط الخطابية': String(numTypes)
+            },
+            partsTable: this.project.parts.map(p => ({
+                'الجزء': p.name,
+                'عدد النصوص': p.textsCount,
+                'عدد الكلمات': p.wordsCount ? p.wordsCount.toLocaleString('ar-SA') : '—',
+                'الملف': p.fileName
+            })),
+            typesTable: Object.entries(corpus.discourseTypes)
+                .sort((a, b) => b[1] - a[1])
+                .map(([type, count]) => ({
+                    'النمط': type,
+                    'العدد': count,
+                    'النسبة': corpus.totalTexts > 0 ? ((count / corpus.totalTexts) * 100).toFixed(2) + '%' : '0%'
+                }))
         };
     }
 
     _generateProcedureGuide() {
-        return this.project.analysis.criteria.map((c, i) => ({
-            step: `${i + 1}`,
-            criterion: c.name,
-            theory: c.theory || '',
-            procedure: c.description || '',
-            output: c.outputDescription || ''
-        }));
+        const criteria = this.project.analysis.criteria;
+
+        if (criteria.length > 0) {
+            return {
+                title: `دليل الإجراء التفصيلي لتطبيق المعايير الانتقائية — "${this.project.name || 'مشروع سَبْر'}"`,
+                steps: criteria.map((c, i) => ({
+                    step: `${i + 1}.1`,
+                    procedure: c.description || c.name,
+                    application: this._describeCriterionApplication(c),
+                    output: c.outputDescription || this._describeCriterionOutput(c)
+                }))
+            };
+        }
+
+        // Default procedure guide when no criteria configured
+        return {
+            title: `دليل الإجراء التفصيلي — "${this.project.name || 'مشروع سَبْر'}"`,
+            steps: [
+                { step: '1', procedure: 'جمع النصوص وتقسيمها إلى أجزاء', application: 'إضافة ملفات المصدر (PDF/TXT/MD) وتحديد أسماء الأجزاء', output: 'مدونة خام مقسّمة إلى نصوص فردية مع بيانات وصفية' },
+                { step: '2', procedure: 'معالجة الملفات واستخلاص النصوص', application: 'استخراج النصوص تلقائيًا وتصنيف الأنماط الخطابية', output: 'نصوص مفهرسة بعدد الكلمات والنمط والعنوان' },
+                { step: '3', procedure: 'تهيئة المعايير الانتقائية', application: 'تحديد معايير الاستبعاد والشمول (كلمات مفتاحية، أنماط، حدود دنيا)', output: 'قائمة معايير جاهزة للتطبيق' },
+                { step: '4', procedure: 'تطبيق المعايير على المدونة', application: 'تشغيل المعايير على جميع النصوص وحساب نتائج الاجتياز', output: 'نتائج الاجتياز لكل نص وإحصائيات الاستبعاد' },
+                { step: '5', procedure: 'مراجعة النتائج وتصدير المدونة', application: 'فحص الإحصائيات وتصدير المدونة المنقّحة كملف Excel', output: 'ملف Excel بخمس أوراق عمل شامل' }
+            ]
+        };
+    }
+
+    _describeCriterionApplication(c) {
+        switch (c.type) {
+            case 'keyword_exclusion': return `فحص عنوان النص بحثًا عن عبارات: ${(c.keywords || []).map(k => '«' + k + '»').join('، ')}`;
+            case 'type_exclusion': return `استبعاد النصوص من الأنماط: ${(c.excludeTypes || []).join('، ')}`;
+            case 'min_words': return `التحقق من أن عدد كلمات النص ≥ ${c.threshold || 30}`;
+            case 'lexical_density': return `فحص الكثافة المعجمية (${c.densityMode === 'count' ? 'عدد' : 'نسبة'} ≥ ${c.threshold})`;
+            case 'regex': return `تطبيق نمط تعبير منتظم: ${c.pattern || ''}`;
+            case 'compound': return `معيار مُركّب (${c.logic || 'AND'}) من ${(c.subCriteria || []).length} معايير فرعية`;
+            default: return c.description || '';
+        }
+    }
+
+    _describeCriterionOutput(c) {
+        switch (c.type) {
+            case 'keyword_exclusion': return 'استبعاد النصوص التي تحتوي على الكلمات المفتاحية المحددة';
+            case 'type_exclusion': return 'استبعاد أنماط خطابية بعينها';
+            case 'min_words': return 'استبعاد النصوص الأقصر من الحد الأدنى';
+            case 'lexical_density': return 'تقييم الكثافة المعجمية لكل نص';
+            default: return 'تطبيق المعيار وتسجيل النتيجة';
+        }
     }
 
     _generateMethodology() {
-        const refs = new Set();
-        for (const c of this.project.analysis.criteria) {
-            if (c.references) {
-                c.references.forEach(r => refs.add(r));
+        const projectName = this.project.name || 'مشروع سَبْر';
+        const corpus = this.project.corpus;
+        const analysis = this.project.analysis;
+        const avgWords = corpus.totalTexts > 0 ? Math.round(corpus.totalWords / corpus.totalTexts) : 0;
+
+        const rows = [
+            { element: 'المنهجية البحثية', details: `المنهجية البحثية لاختيار عيّنة "${projectName}"` },
+            { element: '', details: '' },
+            { element: '1. مصدر البيانات', details: `تَستند الدراسة إلى ${this.project.totalParts} ملف/ملفات مصدر تمثل "${projectName}".` },
+            { element: '', details: `المدونة الأصليّة تضمّ ${corpus.totalTexts} نصًا موزّعة على ${this.project.totalParts} أجزاء بإجمالي ${corpus.totalWords.toLocaleString('ar-SA')} كلمة.` },
+            { element: '', details: '' },
+            { element: '2. أنماط الخطاب', details: `تم تصنيف النصوص إلى ${Object.keys(corpus.discourseTypes).length} أنماط خطابية:` },
+        ];
+
+        // Add discourse types
+        for (const [type, count] of Object.entries(corpus.discourseTypes).sort((a, b) => b[1] - a[1])) {
+            const pct = corpus.totalTexts > 0 ? ((count / corpus.totalTexts) * 100).toFixed(1) : '0';
+            rows.push({ element: '', details: `• ${type}: ${count} نص (${pct}%)` });
+        }
+
+        rows.push({ element: '', details: '' });
+        rows.push({ element: '3. حجم المدونة', details: `إجمالي الكلمات: ${corpus.totalWords.toLocaleString('ar-SA')} — متوسط الكلمات لكل نص: ${avgWords}` });
+
+        if (analysis.criteria.length > 0) {
+            rows.push({ element: '', details: '' });
+            rows.push({ element: '4. المعايير الانتقائية', details: `تم تطبيق ${analysis.criteria.length} معيار/معايير لتنقيح المدونة:` });
+            for (const c of analysis.criteria) {
+                rows.push({ element: '', details: `• ${c.name}: ${c.description || this._describeCriterionApplication(c)}` });
+            }
+            if (analysis.statistics.passedTexts !== undefined) {
+                rows.push({ element: '', details: '' });
+                rows.push({ element: '5. نتائج التنقيح', details: `اجتازت ${analysis.statistics.passedTexts} نصًا جميع المعايير (${analysis.statistics.passRate}) من أصل ${corpus.totalTexts} نصًا.` });
             }
         }
-        return {
-            source: this.project.corpus.metadata.source || this.project.name,
-            criteria: this.project.analysis.criteria.map(c => ({
-                name: c.name,
-                theory: c.theory || '',
-                description: c.description || ''
-            })),
-            references: Array.from(refs)
-        };
+
+        rows.push({ element: '', details: '' });
+        rows.push({ element: analysis.criteria.length > 0 ? '6. أداة المعالجة' : '4. أداة المعالجة', details: 'تطبيق سَبْر (Sabr v5.0) — محلل الخطاب التداولي العربي' });
+        rows.push({ element: '', details: `تاريخ التصدير: ${new Date().toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}` });
+
+        return rows;
     }
 }
 

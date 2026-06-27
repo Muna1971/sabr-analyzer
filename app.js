@@ -17,6 +17,7 @@ let currentLang = 'ar';
 let customStopwords = null; // null = use defaults
 let lexiconCategories = []; // { name, words: [] }
 let selectedDefaultLexicon = null; // key from defaultLexicons
+let lastLexiconResult = null; // last lexicon analysis result for export
 let currentComparativeAnalysis = null;
 
 // ============ INITIALIZATION ============
@@ -35,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initWelcome();
     setupProject(); // v5.0
     setupDashboardActions(); // v5.0 dashboard
+    setupCorpusCleaning(); // v5.0 corpus cleaning tool
 });
 
 // ============ TOAST NOTIFICATIONS ============
@@ -313,7 +315,7 @@ function updateAllText() {
 
     // Navigation
     const navBtns = document.querySelectorAll('.nav-btn');
-    const navKeys = ['navHome', 'navAbout', 'navDeveloper', 'navResults'];
+    const navKeys = ['navHome', 'navProject', 'navAbout', 'navDeveloper'];
     navBtns.forEach((btn, i) => {
         if (navKeys[i]) btn.querySelector('.nav-label').textContent = t(navKeys[i]);
     });
@@ -345,7 +347,15 @@ function updateAllText() {
     labels.forEach((el, i) => { if (labelKeys[i]) el.textContent = t(labelKeys[i]); });
 
     const searchTitle = document.querySelector('.search-card h3');
-    if (searchTitle) searchTitle.textContent = t('searchTitle');
+    if (searchTitle) {
+        const svgEl = searchTitle.querySelector('svg');
+        if (svgEl) {
+            Array.from(searchTitle.childNodes).forEach(n => { if (n.nodeType === 3) n.remove(); });
+            searchTitle.appendChild(document.createTextNode(t('searchTitle')));
+        } else {
+            searchTitle.textContent = t('searchTitle');
+        }
+    }
 
     const searchInput = document.getElementById('resultSearchInput');
     if (searchInput) searchInput.placeholder = t('searchPlaceholder');
@@ -353,10 +363,20 @@ function updateAllText() {
     const searchBtn = document.getElementById('resultSearchBtn');
     if (searchBtn) searchBtn.textContent = t('searchButton');
 
-    // Tabs
+    // Tabs — preserve SVG icons, only update text
     const tabKeys = ['tabFrequencies', 'tabPragmatic', 'tabLexicon', 'tabComparative', 'tabContexts', 'tabCharts', 'tabSettings'];
     document.querySelectorAll('.tab-button').forEach((btn, i) => {
-        if (tabKeys[i]) btn.textContent = t(tabKeys[i]);
+        if (tabKeys[i]) {
+            const svg = btn.querySelector('svg');
+            const text = t(tabKeys[i]);
+            if (svg) {
+                // Keep SVG, replace only text nodes
+                Array.from(btn.childNodes).forEach(n => { if (n.nodeType === 3) n.remove(); });
+                btn.appendChild(document.createTextNode(' ' + text));
+            } else {
+                btn.textContent = text;
+            }
+        }
     });
 
     // Table headers
@@ -431,6 +451,42 @@ function setupDashboardActions() {
         browseBtn.addEventListener('click', () => {
             const uploadZone = document.getElementById('uploadZone');
             if (uploadZone) uploadZone.click();
+        });
+    }
+
+    // Back to project from analysis
+    const backBtn = document.getElementById('backToProject');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            const navBtn = document.querySelector('.nav-btn[data-page="project"]');
+            if (navBtn) navBtn.click();
+        });
+    }
+    // Dashboard "التحليل التداولي" quick action
+    const analysisAction = document.getElementById('dashActionAnalysis');
+    if (analysisAction) {
+        analysisAction.addEventListener('click', async () => {
+            if (currentText) {
+                showResults();
+                return;
+            }
+            // Try to analyze from corpus project
+            try {
+                const result = await ipcRenderer.invoke('analyze-corpus-text');
+                if (result.success) {
+                    currentText = result.text;
+                    currentFileSize = result.fileSize;
+                    currentFileName = result.fileName;
+                    currentAnalysis = result.analysis;
+                    currentPragmaticAnalysis = result.pragmaticAnalysis;
+                    currentComparativeAnalysis = result.comparativeAnalysis;
+                    showResults();
+                } else {
+                    showToast(currentLang === 'ar' ? 'قم بتحميل ملف أو إنشاء مشروع أولاً' : 'Upload a file or create a project first', 'warning');
+                }
+            } catch (err) {
+                showToast(currentLang === 'ar' ? 'قم بتحميل ملف أو إنشاء مشروع أولاً' : 'Upload a file or create a project first', 'warning');
+            }
         });
     }
 }
@@ -518,8 +574,9 @@ function resetUploadZone() {
 }
 
 function showResults() {
+    // Navigate to analysis page (under project context)
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector('[data-page="results"]').classList.add('active');
+    document.querySelector('[data-page="project"]').classList.add('active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('resultsPage').classList.add('active');
 
@@ -697,7 +754,27 @@ function displayPragmaticResults() {
     const container = document.getElementById('pragmaticResults');
     document.getElementById('pragmaticTotal').textContent = currentPragmaticAnalysis.totalPragmaticItems;
 
+    // Update overview cards counts
     const results = currentPragmaticAnalysis.results;
+    const cardMap = {
+        'pragmaCountDM': ['discourseMarkers'],
+        'pragmaCountSA': ['speechActs'],
+        'pragmaCountQ': ['interrogatives'],
+        'pragmaCountNeg': ['negation'],
+        'pragmaCountEmp': ['assertionTools'],
+        'pragmaCountImp': ['logicalConnectors']
+    };
+    for (const [elId, keys] of Object.entries(cardMap)) {
+        const el = document.getElementById(elId);
+        if (el) {
+            let count = 0;
+            for (const k of keys) {
+                if (results[k]) count += results[k].totalCount || 0;
+            }
+            el.textContent = count;
+        }
+    }
+
     let html = '';
 
     for (const [catKey, category] of Object.entries(results)) {
@@ -960,6 +1037,8 @@ function setupLexicon() {
     document.getElementById('analyzeCollocationBtn').addEventListener('click', runCollocation);
     document.getElementById('loadDefaultLexiconBtn').addEventListener('click', loadSelectedDefaultLexicon);
     document.getElementById('analyzeDefaultLexiconBtn').addEventListener('click', analyzeDefaultLexiconDirectly);
+    const exportResultsBtn = document.getElementById('exportLexiconResultsBtn');
+    if (exportResultsBtn) exportResultsBtn.addEventListener('click', exportLexiconResults);
 
     displayDefaultLexicons();
     displayLexiconCategories();
@@ -1146,6 +1225,7 @@ async function analyzeLexicon() {
 }
 
 function displayLexiconResults(result) {
+    lastLexiconResult = result; // save for export
     const container = document.getElementById('lexiconResults');
     const detailedContainer = document.getElementById('lexiconDetailedResults');
     container.style.display = 'block';
@@ -1278,6 +1358,83 @@ async function exportLexiconFile() {
     await ipcRenderer.invoke('export-lexicon', lexiconCategories);
 }
 
+// Export lexicon analysis results to Excel
+async function exportLexiconResults() {
+    if (!lastLexiconResult) {
+        showToast(currentLang === 'ar' ? 'قم بتحليل المعجم أولاً' : 'Analyze lexicon first', 'warning');
+        return;
+    }
+
+    const workbook = new ExcelJS.Workbook();
+
+    // Sheet 1: Summary
+    const summarySheet = workbook.addWorksheet(currentLang === 'ar' ? 'ملخص' : 'Summary');
+    summarySheet.columns = [
+        { header: currentLang === 'ar' ? 'الفئة' : 'Category', key: 'name', width: 30 },
+        { header: currentLang === 'ar' ? 'إجمالي التكرارات' : 'Total Count', key: 'total', width: 18 },
+        { header: currentLang === 'ar' ? 'كلمات وُجدت' : 'Words Found', key: 'found', width: 18 },
+        { header: currentLang === 'ar' ? 'إجمالي الكلمات' : 'Total Words', key: 'wordCount', width: 18 },
+        { header: currentLang === 'ar' ? 'النسبة %' : 'Percentage %', key: 'pct', width: 15 }
+    ];
+    summarySheet.getRow(1).font = { bold: true };
+
+    lastLexiconResult.categories.forEach(cat => {
+        summarySheet.addRow({
+            name: cat.name,
+            total: cat.totalCount,
+            found: cat.foundCount,
+            wordCount: cat.wordCount,
+            pct: cat.percentage
+        });
+    });
+
+    // Sheet per category with words
+    lastLexiconResult.categories.forEach(cat => {
+        const sheetName = cat.name.substring(0, 31);
+        const ws = workbook.addWorksheet(sheetName);
+        ws.columns = [
+            { header: currentLang === 'ar' ? 'الكلمة' : 'Word', key: 'word', width: 25 },
+            { header: currentLang === 'ar' ? 'التكرار' : 'Count', key: 'count', width: 15 },
+            { header: currentLang === 'ar' ? 'النسبة %' : 'Percentage %', key: 'pct', width: 15 }
+        ];
+        ws.getRow(1).font = { bold: true };
+
+        cat.words.forEach(w => {
+            ws.addRow({ word: w.originalWord || w.word, count: w.count, pct: w.percentage });
+        });
+    });
+
+    // Sheet: Collocation (if data exists)
+    const collocationEl = document.getElementById('collocationResults');
+    const collocationRows = collocationEl ? collocationEl.querySelectorAll('tbody tr') : [];
+    if (collocationRows.length > 0) {
+        const colSheet = workbook.addWorksheet(currentLang === 'ar' ? 'التلازم' : 'Collocation');
+        colSheet.columns = [
+            { header: t('colWord'), key: 'word', width: 25 },
+            { header: t('colCount'), key: 'coOcc', width: 15 },
+            { header: t('colFreq'), key: 'freq', width: 15 },
+            { header: t('colMI'), key: 'mi', width: 15 },
+            { header: t('colPercent'), key: 'pct', width: 15 }
+        ];
+        colSheet.getRow(1).font = { bold: true };
+
+        collocationRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            colSheet.addRow({
+                word: cells[0]?.textContent || '',
+                coOcc: parseInt(cells[1]?.textContent) || 0,
+                freq: parseInt(cells[2]?.textContent) || 0,
+                mi: parseFloat(cells[3]?.textContent) || 0,
+                pct: cells[4]?.textContent?.replace('%', '') || ''
+            });
+        });
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    downloadBlob(buffer, `lexicon-results-${Date.now()}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    showToast(currentLang === 'ar' ? 'تم تصدير نتائج المعجم بنجاح' : 'Lexicon results exported', 'success');
+}
+
 async function importLexiconFile() {
     const result = await ipcRenderer.invoke('import-lexicon');
     if (result.success && result.data) {
@@ -1297,6 +1454,187 @@ function setupSettings() {
     });
     document.getElementById('resetStopwordsBtn').addEventListener('click', resetStopwords);
     document.getElementById('reanalyzeBtn').addEventListener('click', reanalyze);
+}
+
+let originalFullText = null; // stores the unfiltered full text
+
+// ============ CORPUS CLEANING TOOL ============
+function setupCorpusCleaning() {
+    // Toggle panel open/close
+    const toggle = document.getElementById('corpusCleanToggle');
+    const body = document.getElementById('corpusCleanBody');
+    const card = document.getElementById('corpusCleanCard');
+    if (toggle) {
+        toggle.addEventListener('click', () => {
+            const isOpen = body.style.display !== 'none';
+            body.style.display = isOpen ? 'none' : 'block';
+            card.classList.toggle('open', !isOpen);
+        });
+    }
+
+    // Mode switching
+    document.querySelectorAll('input[name="corpusMode"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            document.getElementById('speakerPanel').style.display = radio.value === 'speaker' ? 'block' : 'none';
+            document.getElementById('markersPanel').style.display = radio.value === 'markers' ? 'block' : 'none';
+        });
+    });
+
+    // Apply & Reset buttons
+    const applyBtn = document.getElementById('applyCorpusClean');
+    if (applyBtn) applyBtn.addEventListener('click', applyCorpusCleaning);
+
+    const resetBtn = document.getElementById('resetCorpusClean');
+    if (resetBtn) resetBtn.addEventListener('click', resetCorpusCleaning);
+}
+
+function applyCorpusCleaning() {
+    if (!currentText) {
+        showToast(currentLang === 'ar' ? 'قم بتحميل ملف أولاً' : 'Load a file first', 'warning');
+        return;
+    }
+
+    if (!originalFullText) originalFullText = currentText;
+
+    const mode = document.querySelector('input[name="corpusMode"]:checked').value;
+    let segments = [];
+
+    if (mode === 'full') {
+        currentText = originalFullText;
+        document.getElementById('corpusCleanBadge').style.display = 'none';
+        document.getElementById('corpusCleanInfo').style.display = 'none';
+        document.getElementById('corpusCleanPreview').style.display = 'none';
+        reanalyze();
+        showToast(currentLang === 'ar' ? 'تم استعادة النص الكامل' : 'Full text restored', 'info');
+        return;
+    }
+
+    if (mode === 'quotes') {
+        // Extract text between « », " ", and «» variants
+        const regex = /[«""“]([\s\S]*?)[»""”]/g;
+        let match;
+        while ((match = regex.exec(originalFullText)) !== null) {
+            const seg = match[1].trim();
+            if (seg.length > 10) segments.push(seg); // ignore very short matches
+        }
+    } else if (mode === 'speaker') {
+        const phrasesText = document.getElementById('speakerPhrases').value.trim();
+        if (!phrasesText) {
+            showToast(currentLang === 'ar' ? 'أدخل عبارات نسبة الخطاب' : 'Enter speech attribution phrases', 'warning');
+            return;
+        }
+        const phrases = phrasesText.split('\n').map(p => p.trim()).filter(p => p.length > 0);
+
+        for (const phrase of phrases) {
+            let searchFrom = 0;
+            while (true) {
+                const idx = originalFullText.indexOf(phrase, searchFrom);
+                if (idx === -1) break;
+                const contentStart = idx + phrase.length;
+
+                // Look for the speech: could be in « » or until paragraph break
+                const afterPhrase = originalFullText.substring(contentStart, contentStart + 5).trim();
+                let endIdx;
+
+                // Check if speech is in quotes
+                const quoteStart = originalFullText.indexOf('«', contentStart);
+                const colonOrSpace = contentStart;
+                if (quoteStart !== -1 && quoteStart - contentStart < 15) {
+                    // Quote-delimited speech
+                    endIdx = originalFullText.indexOf('»', quoteStart + 1);
+                    if (endIdx === -1) endIdx = originalFullText.indexOf('\n\n', quoteStart);
+                    if (endIdx === -1) endIdx = originalFullText.length;
+                    const seg = originalFullText.substring(quoteStart + 1, endIdx).trim();
+                    if (seg.length > 5) segments.push(seg);
+                    searchFrom = endIdx + 1;
+                } else {
+                    // Take until paragraph break or next period+newline
+                    endIdx = originalFullText.indexOf('\n\n', contentStart);
+                    if (endIdx === -1) endIdx = originalFullText.length;
+                    const seg = originalFullText.substring(contentStart, endIdx).trim();
+                    // Clean leading colons and spaces
+                    const cleaned = seg.replace(/^[\s:：]+/, '').trim();
+                    if (cleaned.length > 5) segments.push(cleaned);
+                    searchFrom = endIdx + 2;
+                }
+            }
+        }
+    } else if (mode === 'markers') {
+        const startMarker = document.getElementById('customStartMarker').value.trim();
+        const endMarker = document.getElementById('customEndMarker').value.trim();
+
+        if (!startMarker) {
+            showToast(currentLang === 'ar' ? 'أدخل علامة البداية' : 'Enter start marker', 'warning');
+            return;
+        }
+
+        let searchFrom = 0;
+        while (true) {
+            const startIdx = originalFullText.indexOf(startMarker, searchFrom);
+            if (startIdx === -1) break;
+            const contentStart = startIdx + startMarker.length;
+            let endIdx;
+            if (endMarker) {
+                endIdx = originalFullText.indexOf(endMarker, contentStart);
+                if (endIdx === -1) endIdx = originalFullText.length;
+            } else {
+                endIdx = originalFullText.indexOf('\n\n', contentStart);
+                if (endIdx === -1) endIdx = originalFullText.length;
+            }
+            const seg = originalFullText.substring(contentStart, endIdx).trim();
+            if (seg.length > 5) segments.push(seg);
+            searchFrom = endIdx + (endMarker ? endMarker.length : 2);
+        }
+    }
+
+    if (segments.length === 0) {
+        showToast(currentLang === 'ar' ? 'لم يتم العثور على مقاطع مستهدفة. جرّب تعديل العبارات أو الوضع' : 'No target segments found. Try adjusting phrases or mode', 'warning');
+        return;
+    }
+
+    currentText = segments.join('\n\n');
+
+    // Show info
+    const originalWords = originalFullText.split(/\s+/).filter(w => w).length;
+    const filteredWords = currentText.split(/\s+/).filter(w => w).length;
+    const info = document.getElementById('corpusCleanInfo');
+    info.style.display = 'block';
+    info.innerHTML = currentLang === 'ar'
+        ? `<strong>نتيجة التنظيف:</strong> تم استخراج <strong>${segments.length}</strong> مقطع مستهدف — <strong>${filteredWords.toLocaleString()}</strong> كلمة من أصل <strong>${originalWords.toLocaleString()}</strong> كلمة (<strong>${((filteredWords/originalWords)*100).toFixed(1)}%</strong> من النص الأصلي)`
+        : `<strong>Cleaning Result:</strong> Extracted <strong>${segments.length}</strong> target segments — <strong>${filteredWords.toLocaleString()}</strong> words from <strong>${originalWords.toLocaleString()}</strong> total (<strong>${((filteredWords/originalWords)*100).toFixed(1)}%</strong> of original)`;
+
+    // Show preview (first 5 segments)
+    const preview = document.getElementById('corpusCleanPreview');
+    const previewContent = document.getElementById('corpusPreviewContent');
+    preview.style.display = 'block';
+    previewContent.innerHTML = segments.slice(0, 5).map((seg, i) =>
+        `<div class="corpus-preview-segment"><strong>${i + 1}.</strong> ${seg.substring(0, 200)}${seg.length > 200 ? '...' : ''}</div>`
+    ).join('');
+
+    // Show active badge
+    document.getElementById('corpusCleanBadge').style.display = 'inline-block';
+
+    // Re-analyze
+    reanalyze();
+    showToast(currentLang === 'ar'
+        ? `تم تنظيف المدونة: ${segments.length} مقطع مستهدف — ${filteredWords} كلمة`
+        : `Corpus cleaned: ${segments.length} segments — ${filteredWords} words`, 'success');
+}
+
+function resetCorpusCleaning() {
+    if (originalFullText) {
+        currentText = originalFullText;
+        originalFullText = null;
+    }
+    document.querySelector('input[name="corpusMode"][value="full"]').checked = true;
+    document.getElementById('speakerPanel').style.display = 'none';
+    document.getElementById('markersPanel').style.display = 'none';
+    document.getElementById('corpusCleanInfo').style.display = 'none';
+    document.getElementById('corpusCleanPreview').style.display = 'none';
+    document.getElementById('corpusCleanBadge').style.display = 'none';
+
+    reanalyze();
+    showToast(currentLang === 'ar' ? 'تم إلغاء التنظيف — النص الكامل مُستعاد' : 'Cleaning reset — full text restored', 'success');
 }
 
 function displayStopwords() {
@@ -1791,6 +2129,36 @@ function setupProject() {
             updateProcessingProgress(data);
         });
     }
+
+    // Launch analysis from project dashboard
+    const launchBtn = document.getElementById('launchAnalysisBtn');
+    if (launchBtn) {
+        launchBtn.addEventListener('click', async () => {
+            // If text already loaded (single file), show results directly
+            if (currentText) {
+                showResults();
+                return;
+            }
+            // Otherwise, analyze corpus texts from project
+            showToast(currentLang === 'ar' ? 'جارٍ تحليل نصوص المدونة...' : 'Analyzing corpus texts...', 'info', 5000);
+            try {
+                const result = await ipcRenderer.invoke('analyze-corpus-text');
+                if (result.success) {
+                    currentText = result.text;
+                    currentFileSize = result.fileSize;
+                    currentFileName = result.fileName;
+                    currentAnalysis = result.analysis;
+                    currentPragmaticAnalysis = result.pragmaticAnalysis;
+                    currentComparativeAnalysis = result.comparativeAnalysis;
+                    showResults();
+                } else {
+                    showToast(result.error || (currentLang === 'ar' ? 'قم بمعالجة الملفات أولاً' : 'Process files first'), 'warning');
+                }
+            } catch (err) {
+                showToast('خطأ: ' + err.message, 'error');
+            }
+        });
+    }
 }
 
 function showProjectStep(step) {
@@ -1999,15 +2367,11 @@ function showProjectDashboard(summary) {
 
 async function handleExportCorpus() {
     showToast('جارٍ تصدير المدوّنة...', 'info');
-    const result = await ipcRenderer.invoke('export-corpus', 'json');
+    const result = await ipcRenderer.invoke('export-corpus', 'xlsx');
     if (result.success) {
-        // Export as JSON file via IPC
-        const exportResult = await ipcRenderer.invoke('export-lexicon', result.data);
-        if (exportResult.success) {
-            showToast('تم تصدير المدوّنة بنجاح', 'success');
-        }
+        showToast('تم تصدير المدوّنة بنجاح — ' + result.filePath, 'success');
     } else {
-        showToast('خطأ في التصدير: ' + result.error, 'error');
+        showToast('خطأ في التصدير: ' + (result.error || ''), 'error');
     }
 }
 

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sabr - سَبْر — محلل الخطاب التداولي</title>
+    <link rel="icon" type="image/x-icon" href="assets/icon.ico">
+    <link rel="icon" type="image/png" href="assets/icon.png">
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
@@ -256,10 +258,6 @@
                 <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
                 <span class="nav-label">عن المطور</span>
             </button>
-            <button class="nav-btn" data-page="results">
-                <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></span>
-                <span class="nav-label">النتائج</span>
-            </button>
         </aside>
 
         <!-- Content Area -->
@@ -377,12 +375,12 @@
                                     </div>
                                     <svg class="dash-action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                                 </button>
-                                <button class="dash-action-btn" data-page="results">
+                                <button class="dash-action-btn" id="dashActionAnalysis">
                                     <div class="dash-action-icon">
                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
                                     </div>
                                     <div class="dash-action-text">
-                                        <span class="dash-action-name" data-ar="عرض النتائج" data-en="View Results">عرض النتائج</span>
+                                        <span class="dash-action-name" data-ar="التحليل التداولي" data-en="Pragmatic Analysis">التحليل التداولي</span>
                                         <span class="dash-action-desc" data-ar="تكرارات وتحليل تداولي ورسوم" data-en="Frequencies, pragmatic analysis & charts">تكرارات وتحليل تداولي ورسوم</span>
                                     </div>
                                     <svg class="dash-action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
@@ -467,12 +465,12 @@
                                     </svg>
                                 </div>
                                 <h3 class="track-title">بناء مدوّنة لغوية</h3>
-                                <p class="track-desc">استيراد نصوص من مصادر متعددة وبناء كوربس مُهيكل ومُوسوم بالبيانات الوصفية</p>
+                                <p class="track-desc">استيراد نصوص من مصادر متعددة وبناء مدونة مهيكلة مُهيكل ومُوسوم بالبيانات الوصفية</p>
                                 <ul class="track-features">
                                     <li>تحميل أجزاء متعددة (1 – 99)</li>
                                     <li>تقسيم وتوسيم تلقائي</li>
                                     <li>تصنيف الأنماط الخطابية</li>
-                                    <li>تصدير كوربس مُهيكل</li>
+                                    <li>تصدير مدونة مهيكلة مُهيكل</li>
                                 </ul>
                             </div>
 
@@ -504,7 +502,7 @@
                                 <h3 class="track-title">بناء + تحليل</h3>
                                 <p class="track-desc">بناء المدوّنة اللغوية ثم تحليلها تداولياً في مشروع واحد متكامل</p>
                                 <ul class="track-features">
-                                    <li>المسار الأول: بناء الكوربس</li>
+                                    <li>المسار الأول: بناء المدونة مهيكلة</li>
                                     <li>المسار الثاني: التحليل التداولي</li>
                                     <li>مخرجات شاملة (Excel 5 أوراق)</li>
                                     <li>توثيق منهجي تلقائي</li>
@@ -639,6 +637,17 @@
                             </button>
                             <button class="btn-secondary" id="btnAnalyzeCorpus">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> بدء التحليل التداولي
+                            </button>
+                        </div>
+
+                        <div class="project-analysis-launch" id="projectAnalysisLaunch" style="margin-top:1.5rem;">
+                            <button class="btn-analysis-launch" id="launchAnalysisBtn">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                                <div>
+                                    <strong data-ar="التحليل التداولي الشامل" data-en="Comprehensive Pragmatic Analysis">التحليل التداولي الشامل</strong>
+                                    <small data-ar="التكرارات · التحليل التداولي · المعجم · السياقات · الرسوم البيانية" data-en="Frequencies · Pragmatic · Lexicon · Contexts · Charts">التكرارات · التحليل التداولي · المعجم · السياقات · الرسوم البيانية</small>
+                                </div>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                             </button>
                         </div>
                     </div>
@@ -977,7 +986,7 @@
                                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                                 </div>
                                 <h4>بناء المدوّنات اللغوية</h4>
-                                <p>استيراد نصوص من مصادر متعددة (PDF, DOCX, TXT) وبناء كوربس مُهيكل ومُوسوم بالبيانات الوصفية مع دعم حتى 99 جزءاً</p>
+                                <p>استيراد نصوص من مصادر متعددة (PDF, DOCX, TXT) وبناء مدونة مهيكلة مُهيكل ومُوسوم بالبيانات الوصفية مع دعم حتى 99 جزءاً</p>
                             </div>
                             <div class="capability-card">
                                 <div class="capability-icon">
@@ -1091,6 +1100,16 @@
             <!-- Results Page -->
             <div class="page" id="resultsPage">
                 <div class="results-container">
+                    <!-- Breadcrumb Navigation -->
+                    <div class="analysis-breadcrumb" id="analysisBreadcrumb">
+                        <button class="breadcrumb-back" id="backToProject">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                            <span data-ar="المشروع" data-en="Project">المشروع</span>
+                        </button>
+                        <span class="breadcrumb-sep">/</span>
+                        <span class="breadcrumb-current" data-ar="التحليل التداولي" data-en="Pragmatic Analysis">التحليل التداولي</span>
+                    </div>
+
                     <!-- File Info Card -->
                     <div class="results-header">
                         <div class="file-info-card">
@@ -1129,6 +1148,95 @@
                             <div class="search-box">
                                 <input type="text" id="resultSearchInput" placeholder="أدخل كلمة للبحث...">
                                 <button id="resultSearchBtn" class="search-button">بحث</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ======= CORPUS CLEANING TOOL ======= -->
+                    <div class="corpus-clean-card" id="corpusCleanCard">
+                        <div class="corpus-clean-header" id="corpusCleanToggle">
+                            <div class="corpus-clean-title">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="12" y1="12" x2="12" y2="18"/></svg>
+                                <h3 data-ar="تنظيف المدونة — فصل الخطاب المستهدف" data-en="Corpus Cleaning — Extract Target Discourse">تنظيف المدونة — فصل الخطاب المستهدف</h3>
+                            </div>
+                            <span class="corpus-clean-badge" id="corpusCleanBadge" style="display:none;" data-ar="مُفعّل" data-en="Active">مُفعّل</span>
+                            <svg class="corpus-clean-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+
+                        <div class="corpus-clean-body" id="corpusCleanBody" style="display:none;">
+                            <p class="corpus-clean-desc" data-ar="عند تحليل كتاب يتضمن خطابات داخل نص سردي (مثل كتاب الفرائد)، تحتاج لفصل الخطابات المستهدفة عن سرد المؤلف. هذه الأداة تستخرج فقط النصوص المستهدفة للتحليل الدقيق." data-en="When analyzing a book containing speeches within narrative text, you need to separate the target discourse from the author's narrative. This tool extracts only the target texts for accurate analysis.">عند تحليل كتاب يتضمن خطابات داخل نص سردي (مثل كتاب الفرائد)، تحتاج لفصل الخطابات المستهدفة عن سرد المؤلف. هذه الأداة تستخرج فقط النصوص المستهدفة للتحليل الدقيق.</p>
+
+                            <div class="corpus-clean-modes">
+                                <label class="corpus-mode-option">
+                                    <input type="radio" name="corpusMode" value="full" checked>
+                                    <div class="corpus-mode-card">
+                                        <strong data-ar="النص الكامل" data-en="Full Text">النص الكامل</strong>
+                                        <small data-ar="تحليل كل النص بدون تصفية" data-en="Analyze entire text without filtering">تحليل كل النص بدون تصفية</small>
+                                    </div>
+                                </label>
+                                <label class="corpus-mode-option">
+                                    <input type="radio" name="corpusMode" value="quotes">
+                                    <div class="corpus-mode-card">
+                                        <strong data-ar="استخراج النصوص المقتبسة" data-en="Extract Quoted Text">استخراج النصوص المقتبسة</strong>
+                                        <small data-ar="النصوص بين علامات التنصيص « » أو &quot; &quot;" data-en="Text between quotation marks « » or &quot; &quot;">النصوص بين علامات التنصيص « » أو " "</small>
+                                    </div>
+                                </label>
+                                <label class="corpus-mode-option">
+                                    <input type="radio" name="corpusMode" value="speaker">
+                                    <div class="corpus-mode-card">
+                                        <strong data-ar="فصل خطاب متحدث محدد" data-en="Extract Speaker's Discourse">فصل خطاب متحدث محدد</strong>
+                                        <small data-ar="استخراج ما قاله شخص بعينه (مثلاً: خطابات زايد فقط)" data-en="Extract what a specific person said (e.g., Zayed's speeches only)">استخراج ما قاله شخص بعينه (مثلاً: خطابات زايد فقط)</small>
+                                    </div>
+                                </label>
+                                <label class="corpus-mode-option">
+                                    <input type="radio" name="corpusMode" value="markers">
+                                    <div class="corpus-mode-card">
+                                        <strong data-ar="علامات بداية ونهاية مخصصة" data-en="Custom Start/End Markers">علامات بداية ونهاية مخصصة</strong>
+                                        <small data-ar="تحديد عبارة بداية وعبارة نهاية يدوياً" data-en="Manually define start and end phrases">تحديد عبارة بداية وعبارة نهاية يدوياً</small>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Speaker mode options -->
+                            <div class="corpus-option-panel" id="speakerPanel" style="display:none;">
+                                <div class="form-row" style="margin-bottom:0.5rem;">
+                                    <label data-ar="عبارات نسبة الخطاب (واحدة لكل سطر):" data-en="Speech attribution phrases (one per line):">عبارات نسبة الخطاب (واحدة لكل سطر):</label>
+                                </div>
+                                <textarea id="speakerPhrases" rows="4" style="width:100%; font-size:0.9rem; padding:0.5rem; border:1px solid var(--border); border-radius:8px; resize:vertical;" placeholder="قال الشيخ زايد&#10;قال زايد&#10;يقول الشيخ زايد&#10;وقال رحمه الله"></textarea>
+                                <p style="font-size:0.78rem; color:#888; margin-top:0.3rem;" data-ar="البرنامج سيستخرج النص التالي لكل عبارة حتى نهاية الفقرة أو علامة التنصيص التالية" data-en="The tool will extract text following each phrase until the paragraph end or next quote mark">البرنامج سيستخرج النص التالي لكل عبارة حتى نهاية الفقرة أو علامة التنصيص التالية</p>
+                            </div>
+
+                            <!-- Custom markers options -->
+                            <div class="corpus-option-panel" id="markersPanel" style="display:none;">
+                                <div class="form-row" style="margin-bottom:0.5rem;">
+                                    <label data-ar="علامة البداية:" data-en="Start marker:">علامة البداية:</label>
+                                    <input type="text" id="customStartMarker" placeholder="مثال: قال الشيخ زايد:" style="flex:1;">
+                                </div>
+                                <div class="form-row">
+                                    <label data-ar="علامة النهاية:" data-en="End marker:">علامة النهاية:</label>
+                                    <input type="text" id="customEndMarker" placeholder="اتركه فارغاً = حتى نهاية الفقرة" style="flex:1;">
+                                </div>
+                            </div>
+
+                            <!-- Action buttons -->
+                            <div class="corpus-clean-actions">
+                                <button id="applyCorpusClean" class="btn-success" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.6rem 1.2rem;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                                    <span data-ar="تطبيق التنظيف وإعادة التحليل" data-en="Apply Cleaning & Re-analyze">تطبيق التنظيف وإعادة التحليل</span>
+                                </button>
+                                <button id="resetCorpusClean" class="btn-secondary" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.6rem 1.2rem;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                                    <span data-ar="إلغاء التنظيف" data-en="Reset to Full Text">إلغاء التنظيف</span>
+                                </button>
+                            </div>
+
+                            <!-- Results info -->
+                            <div id="corpusCleanInfo" class="corpus-clean-info" style="display:none;"></div>
+
+                            <!-- Preview -->
+                            <div id="corpusCleanPreview" class="corpus-clean-preview" style="display:none;">
+                                <h4 data-ar="معاينة النصوص المستخرجة (أول 5 مقاطع):" data-en="Preview of extracted texts (first 5 segments):">معاينة النصوص المستخرجة (أول 5 مقاطع):</h4>
+                                <div id="corpusPreviewContent"></div>
                             </div>
                         </div>
                     </div>
@@ -1181,7 +1289,7 @@
                             <!-- Pragmatic Overview Cards -->
                             <div class="pragma-overview" id="pragmaOverview">
                                 <div class="pragma-overview-grid">
-                                    <div class="pragma-ov-card" data-pragma-cat="discourse_markers">
+                                    <div class="pragma-ov-card" data-pragma-cat="discourseMarkers">
                                         <div class="pragma-ov-icon">
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                                         </div>
@@ -1191,7 +1299,7 @@
                                         </div>
                                         <p class="pragma-ov-desc" data-ar="أدوات الربط والانتقال: لكن، إذن، بالتالي، من ناحية أخرى" data-en="Connectives & transitions: but, therefore, however">أدوات الربط والانتقال: لكن، إذن، بالتالي، من ناحية أخرى</p>
                                     </div>
-                                    <div class="pragma-ov-card" data-pragma-cat="speech_acts">
+                                    <div class="pragma-ov-card" data-pragma-cat="speechActs">
                                         <div class="pragma-ov-icon">
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                                         </div>
@@ -1201,7 +1309,7 @@
                                         </div>
                                         <p class="pragma-ov-desc" data-ar="إنجازية، توجيهية، تقريرية، تعبيرية، إعلانية (Searle)" data-en="Assertives, directives, commissives, expressives, declarations">إنجازية، توجيهية، تقريرية، تعبيرية، إعلانية (Searle)</p>
                                     </div>
-                                    <div class="pragma-ov-card" data-pragma-cat="interrogative">
+                                    <div class="pragma-ov-card" data-pragma-cat="interrogatives">
                                         <div class="pragma-ov-icon">
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                                         </div>
@@ -1221,7 +1329,7 @@
                                         </div>
                                         <p class="pragma-ov-desc" data-ar="لا، لم، لن، ما، ليس، لمّا، غير، عدم" data-en="Negation particles and patterns">لا، لم، لن، ما، ليس، لمّا، غير، عدم</p>
                                     </div>
-                                    <div class="pragma-ov-card" data-pragma-cat="emphasis">
+                                    <div class="pragma-ov-card" data-pragma-cat="assertionTools">
                                         <div class="pragma-ov-icon">
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
                                         </div>
@@ -1231,15 +1339,15 @@
                                         </div>
                                         <p class="pragma-ov-desc" data-ar="إنّ، قد، لام التوكيد، نون التوكيد، أنّ" data-en="Emphasis particles: indeed, certainly, truly">إنّ، قد، لام التوكيد، نون التوكيد، أنّ</p>
                                     </div>
-                                    <div class="pragma-ov-card" data-pragma-cat="implicature">
+                                    <div class="pragma-ov-card" data-pragma-cat="logicalConnectors">
                                         <div class="pragma-ov-icon">
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                         </div>
                                         <div class="pragma-ov-info">
-                                            <h4 data-ar="السمع المتضمن" data-en="Implicature">السمع المتضمن</h4>
+                                            <h4 data-ar="الروابط المنطقية" data-en="Logical Connectors">الروابط المنطقية</h4>
                                             <span class="pragma-ov-count" id="pragmaCountImp">0</span>
                                         </div>
-                                        <p class="pragma-ov-desc" data-ar="الاستلزام الحواري والمعاني الضمنية (Grice)" data-en="Conversational implicature & implicit meanings">الاستلزام الحواري والمعاني الضمنية (Grice)</p>
+                                        <p class="pragma-ov-desc" data-ar="الشرط والسببية: إذا، لو، إن، كلما، متى" data-en="Conditional connectors: if, when, whenever">الشرط والسببية: إذا، لو، إن، كلما، متى</p>
                                     </div>
                                 </div>
                             </div>
@@ -1305,7 +1413,13 @@
 
                             <!-- Lexicon Results -->
                             <div id="lexiconResults" class="lexicon-results" style="display:none;">
-                                <h3>نتائج تحليل المعجم</h3>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                                    <h3 style="margin:0;" data-ar="نتائج تحليل المعجم" data-en="Lexicon Analysis Results">نتائج تحليل المعجم</h3>
+                                    <button id="exportLexiconResultsBtn" class="btn-success" style="display:inline-flex; align-items:center; gap:0.4rem;">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                        <span data-ar="تصدير النتائج Excel" data-en="Export Results Excel">تصدير النتائج Excel</span>
+                                    </button>
+                                </div>
                                 <!-- Summary Chart -->
                                 <div class="chart-wrapper" style="height:300px; margin-bottom:1rem;">
                                     <canvas id="lexiconChart"></canvas>
@@ -1422,7 +1536,7 @@
                             </div>
 
                             <div class="settings-section">
-                                <h3>📏 حجم نافذة السياق</h3>
+                                <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-inline-end:0.4rem;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span data-ar="حجم نافذة السياق" data-en="Context Window Size">حجم نافذة السياق</span></h3>
                                 <div class="form-row">
                                     <label>عدد الكلمات قبل وبعد:</label>
                                     <select id="contextWindowSize">

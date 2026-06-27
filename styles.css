@@ -3699,3 +3699,239 @@ body {
     font-size: 0.75rem;
     animation: splashTextIn 1s ease 1.8s both;
 }
+
+/* ============ CORPUS CLEANING TOOL ============ */
+.corpus-clean-card {
+    background: var(--card-bg);
+    border: 2px solid var(--gold);
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(212, 168, 67, 0.12);
+}
+.corpus-clean-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 1.2rem;
+    cursor: pointer;
+    background: linear-gradient(135deg, rgba(212, 168, 67, 0.08), rgba(30, 77, 74, 0.05));
+    transition: background 0.3s;
+}
+.corpus-clean-header:hover {
+    background: linear-gradient(135deg, rgba(212, 168, 67, 0.15), rgba(30, 77, 74, 0.08));
+}
+.corpus-clean-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.corpus-clean-title svg {
+    color: var(--gold);
+    flex-shrink: 0;
+}
+.corpus-clean-title h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--teal);
+}
+.corpus-clean-badge {
+    background: var(--gold);
+    color: #fff;
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-weight: 600;
+}
+.corpus-clean-chevron {
+    transition: transform 0.3s;
+    color: var(--teal);
+}
+.corpus-clean-card.open .corpus-clean-chevron {
+    transform: rotate(180deg);
+}
+.corpus-clean-body {
+    padding: 1.2rem;
+    border-top: 1px solid rgba(212, 168, 67, 0.2);
+}
+.corpus-clean-desc {
+    font-size: 0.88rem;
+    color: #666;
+    line-height: 1.7;
+    margin: 0 0 1rem 0;
+}
+.corpus-clean-modes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+}
+.corpus-mode-option {
+    cursor: pointer;
+}
+.corpus-mode-option input[type="radio"] {
+    display: none;
+}
+.corpus-mode-card {
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 0.8rem;
+    transition: all 0.25s;
+}
+.corpus-mode-card strong {
+    display: block;
+    font-size: 0.88rem;
+    color: var(--teal);
+    margin-bottom: 0.3rem;
+}
+.corpus-mode-card small {
+    display: block;
+    font-size: 0.78rem;
+    color: #888;
+    line-height: 1.5;
+}
+.corpus-mode-option input:checked + .corpus-mode-card {
+    border-color: var(--gold);
+    background: rgba(212, 168, 67, 0.06);
+    box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
+}
+.corpus-option-panel {
+    background: rgba(30, 77, 74, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+.corpus-clean-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}
+.corpus-clean-info {
+    margin-top: 0.8rem;
+    padding: 0.8rem 1rem;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(30, 77, 74, 0.05));
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 10px;
+    font-size: 0.88rem;
+    line-height: 1.7;
+}
+.corpus-clean-info strong {
+    color: var(--teal);
+}
+.corpus-clean-preview {
+    margin-top: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    max-height: 250px;
+    overflow-y: auto;
+}
+.corpus-clean-preview h4 {
+    margin: 0 0 0.6rem 0;
+    font-size: 0.88rem;
+    color: var(--teal);
+}
+.corpus-preview-segment {
+    background: rgba(212, 168, 67, 0.06);
+    border-right: 3px solid var(--gold);
+    padding: 0.5rem 0.8rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: #444;
+}
+[dir="ltr"] .corpus-preview-segment {
+    border-right: none;
+    border-left: 3px solid var(--gold);
+}
+
+/* ============ Analysis Breadcrumb ============ */
+.analysis-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(30, 77, 74, 0.04);
+    border: 1px solid rgba(30, 77, 74, 0.1);
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+.breadcrumb-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: none;
+    border: none;
+    color: var(--primary, #1E4D4A);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+.breadcrumb-back:hover {
+    background: rgba(30, 77, 74, 0.08);
+}
+.breadcrumb-back svg {
+    transform: rotate(180deg);
+}
+[dir="ltr"] .breadcrumb-back svg {
+    transform: none;
+}
+.breadcrumb-sep {
+    color: rgba(30, 77, 74, 0.3);
+    font-weight: 300;
+}
+.breadcrumb-current {
+    color: var(--gold, #D4A843);
+    font-weight: 700;
+}
+
+/* ============ Analysis Launch Button in Project ============ */
+.btn-analysis-launch {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 1.2rem 1.5rem;
+    background: linear-gradient(135deg, #1E4D4A 0%, #153C3A 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: start;
+    font-family: inherit;
+    transition: transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(30, 77, 74, 0.3);
+}
+.btn-analysis-launch:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(30, 77, 74, 0.4);
+}
+.btn-analysis-launch svg:first-child {
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+.btn-analysis-launch div {
+    flex: 1;
+}
+.btn-analysis-launch strong {
+    display: block;
+    font-size: 1.05rem;
+    margin-bottom: 0.2rem;
+}
+.btn-analysis-launch small {
+    display: block;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+.btn-analysis-launch svg:last-child {
+    flex-shrink: 0;
+    opacity: 0.5;
+}

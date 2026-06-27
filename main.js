@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { processFile } = require('./fileProcessor');
@@ -13,9 +13,23 @@ let mainWindow;
 const corpusManager = new CorpusManager();
 
 function createMainWindow() {
+    // Load icon using nativeImage for proper Windows support
+    const iconPath = path.join(__dirname, 'assets', 'icon.ico');
+    let appIcon;
+    try {
+        appIcon = nativeImage.createFromPath(iconPath);
+        if (appIcon.isEmpty()) {
+            // Fallback to PNG
+            appIcon = nativeImage.createFromPath(path.join(__dirname, 'assets', 'icon.png'));
+        }
+    } catch (e) {
+        appIcon = undefined;
+    }
+
     mainWindow = new BrowserWindow({
         width: 1400,
         height: 900,
+        icon: appIcon || iconPath,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false
@@ -23,8 +37,18 @@ function createMainWindow() {
         title: 'Sabr - سَبْر — محلل الخطاب التداولي'
     });
 
+    // Set window icon explicitly (Windows fix)
+    if (appIcon && !appIcon.isEmpty()) {
+        mainWindow.setIcon(appIcon);
+    }
+
     mainWindow.loadFile('index.html');
     // mainWindow.webContents.openDevTools();
+}
+
+// Windows: set AppUserModelId for proper taskbar icon
+if (process.platform === 'win32') {
+    app.setAppUserModelId('com.sabr.analyzer');
 }
 
 app.whenReady().then(() => {
@@ -96,6 +120,39 @@ ipcMain.handle('process-file', async (event, filePath) => {
             success: false,
             error: error.message
         };
+    }
+});
+
+// ============ Analyze Corpus Text (for project → analysis flow) ============
+
+ipcMain.handle('analyze-corpus-text', async () => {
+    try {
+        if (!corpusManager.project || !corpusManager.project.corpus.texts.length) {
+            return { success: false, error: 'لا توجد نصوص معالَجة في المشروع' };
+        }
+
+        // Combine all corpus texts into one
+        const allTexts = corpusManager.project.corpus.texts.map(t => t.content).join('\n\n');
+        const totalWords = corpusManager.project.corpus.totalWords;
+        const projectName = corpusManager.project.name || 'مشروع سبر';
+
+        // Run all analyses
+        const analysis = analyzeText(allTexts);
+        const pragmaticAnalysis = analyzePragmatics(allTexts);
+        const comparativeAnalysis = analyzeComparative(allTexts);
+
+        return {
+            success: true,
+            text: allTexts,
+            fileSize: Buffer.byteLength(allTexts, 'utf8'),
+            fileName: projectName,
+            analysis: analysis,
+            pragmaticAnalysis: pragmaticAnalysis,
+            comparativeAnalysis: comparativeAnalysis
+        };
+    } catch (error) {
+        console.error('Corpus analysis error:', error);
+        return { success: false, error: error.message };
     }
 });
 
@@ -283,17 +340,33 @@ ipcMain.handle('export-corpus', async (event, format) => {
         }
 
         const data = corpusManager.exportCorpus('xlsx-data');
+        const projectName = data.projectName || 'مشروع سَبْر';
 
         const workbook = new ExcelJS.Workbook();
         workbook.creator = 'Sabr v5.0 — سَبْر';
         workbook.created = new Date();
 
-        // ── Color palette ──
+        // ── Color palette matching reference ──
         const gold = 'FFD4A843';
-        const teal = 'FF4ECDC4';
+        const teal = 'FF1E4D4A';
+        const tealLight = 'FF4ECDC4';
+        const cream = 'FFF5F0EA';
         const lightGray = 'FFF8F9FA';
         const white = 'FFFFFFFF';
         const darkText = 'FF2C3E50';
+
+        // ── Helper: add title row spanning full width ──
+        function addTitleRow(sheet, text, colSpan) {
+            const titleRow = sheet.getRow(1);
+            titleRow.getCell(1).value = text;
+            if (colSpan > 1) sheet.mergeCells(1, 1, 1, colSpan);
+            titleRow.height = 35;
+            titleRow.getCell(1).font = { name: 'Cairo', size: 16, bold: true, color: { argb: teal } };
+            titleRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: cream } };
+            titleRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            // Blank separator row
+            sheet.getRow(2).height = 8;
+        }
 
         // ── Helper: style a header row ──
         function styleHeaderRow(sheet, row, bgColor) {
@@ -311,13 +384,26 @@ ipcMain.handle('export-corpus', async (event, format) => {
             });
         }
 
+        // ── Helper: style a section header row ──
+        function addSectionHeader(sheet, rowNum, text, colSpan, bgColor) {
+            const row = sheet.getRow(rowNum);
+            row.getCell(1).value = text;
+            if (colSpan > 1) sheet.mergeCells(rowNum, 1, rowNum, colSpan);
+            row.height = 28;
+            row.getCell(1).font = { name: 'Cairo', size: 13, bold: true, color: { argb: 'FFFFFFFF' } };
+            row.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor || teal } };
+            row.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+        }
+
         // ── Helper: apply alternating row colors ──
         function applyAlternatingRows(sheet, startRow, endRow) {
             for (let i = startRow; i <= endRow; i++) {
                 const row = sheet.getRow(i);
                 const bgColor = (i - startRow) % 2 === 0 ? white : lightGray;
                 row.eachCell((cell) => {
-                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
+                    if (!cell.fill || !cell.fill.fgColor || cell.fill.fgColor.argb === 'FFFFFFFF' || !cell.fill.fgColor.argb) {
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
+                    }
                     cell.alignment = { vertical: 'middle', wrapText: true };
                     cell.border = {
                         top: { style: 'thin', color: { argb: 'FFE0E0E0' } },
@@ -325,244 +411,271 @@ ipcMain.handle('export-corpus', async (event, format) => {
                         left: { style: 'thin', color: { argb: 'FFE0E0E0' } },
                         right: { style: 'thin', color: { argb: 'FFE0E0E0' } }
                     };
-                    cell.font = { name: 'Cairo', size: 11, color: { argb: darkText } };
+                    if (!cell.font || !cell.font.color) {
+                        cell.font = { name: 'Cairo', size: 11, color: { argb: darkText } };
+                    }
                 });
             }
         }
 
-        // ════════════════════════════════════════════
-        // Sheet 1: المدونة (Corpus)
-        // ════════════════════════════════════════════
-        const corpusSheet = workbook.addWorksheet('المدونة', {
-            views: [{ rightToLeft: true, state: 'frozen', ySplit: 1 }]
+        // ════════════════════════════════════════════════════
+        // Sheet 1: المدونة الكاملة
+        // ════════════════════════════════════════════════════
+        const corpusSheet = workbook.addWorksheet('1- المدونة الكاملة', {
+            views: [{ rightToLeft: true, state: 'frozen', ySplit: 3 }]
         });
 
         if (data.corpus && data.corpus.length > 0) {
             const sampleRow = data.corpus[0];
             const columnKeys = Object.keys(sampleRow);
-            const minWidths = { '#': 6, 'الجزء': 8, 'اسم الجزء': 20, 'النمط': 14, 'عدد الكلمات': 14, 'عنوان النص': 25, 'المتن': 50 };
+            const numCols = columnKeys.length;
+            const minWidths = { '#': 6, 'الجزء': 8, 'الجزء ': 18, 'النَّمط': 14, 'عدد الكلمات': 14, 'عنوان النص': 30, 'مَتن النص كاملاً': 50, 'ملف المصدر': 22, 'مُجتاز كاملاً': 14 };
 
+            // Title row
+            addTitleRow(corpusSheet, `مدونة "${projectName}" الكاملة`, numCols);
+
+            // Header row at row 3
             corpusSheet.columns = columnKeys.map((key) => ({
-                header: key,
+                header: '',
                 key: key,
-                width: minWidths[key] || 18
+                width: minWidths[key] || 16
             }));
 
-            data.corpus.forEach((item) => {
-                corpusSheet.addRow(item);
-            });
-
-            styleHeaderRow(corpusSheet, corpusSheet.getRow(1), gold);
-            corpusSheet.autoFilter = {
-                from: { row: 1, column: 1 },
-                to: { row: 1, column: columnKeys.length }
-            };
-            applyAlternatingRows(corpusSheet, 2, data.corpus.length + 1);
-
-            // Auto-fit: widen columns if header or content is wider than minimum
+            const headerRow = corpusSheet.getRow(3);
             columnKeys.forEach((key, idx) => {
-                const col = corpusSheet.getColumn(idx + 1);
-                let maxLen = key.length;
-                data.corpus.forEach((row) => {
-                    const val = row[key];
-                    if (val != null) {
-                        const len = String(val).length;
-                        if (len > maxLen) maxLen = len;
-                    }
-                });
-                const desiredWidth = Math.min(Math.max(maxLen + 2, minWidths[key] || 10), 60);
-                if (desiredWidth > col.width) {
-                    col.width = desiredWidth;
-                }
+                headerRow.getCell(idx + 1).value = key;
             });
+            styleHeaderRow(corpusSheet, headerRow, gold);
+
+            corpusSheet.autoFilter = {
+                from: { row: 3, column: 1 },
+                to: { row: 3, column: numCols }
+            };
+
+            // Data rows starting at row 4
+            data.corpus.forEach((item) => {
+                const row = corpusSheet.addRow(Object.values(item));
+            });
+
+            applyAlternatingRows(corpusSheet, 4, data.corpus.length + 3);
         }
 
-        // ════════════════════════════════════════════
-        // Sheet 2: الإحصائيات (Statistics)
-        // ════════════════════════════════════════════
-        const statsSheet = workbook.addWorksheet('الإحصائيات', {
+        // ════════════════════════════════════════════════════
+        // Sheet 2: الإحصائيات
+        // ════════════════════════════════════════════════════
+        const statsSheet = workbook.addWorksheet('2- الإحصائيات', {
             views: [{ rightToLeft: true }]
         });
 
-        statsSheet.columns = [
-            { header: 'القسم', key: 'section', width: 25 },
-            { header: 'المؤشر', key: 'indicator', width: 30 },
-            { header: 'القيمة', key: 'value', width: 18 },
-            { header: 'النسبة', key: 'percentage', width: 15 }
-        ];
+        // Set column widths
+        statsSheet.getColumn(1).width = 30;
+        statsSheet.getColumn(2).width = 30;
+        statsSheet.getColumn(3).width = 20;
+        statsSheet.getColumn(4).width = 18;
+        statsSheet.getColumn(5).width = 18;
+        statsSheet.getColumn(6).width = 18;
 
-        styleHeaderRow(statsSheet, statsSheet.getRow(1), teal);
+        if (data.statistics) {
+            const stats = data.statistics;
+            // Title
+            addTitleRow(statsSheet, stats.title, 6);
 
-        if (data.statistics && data.statistics.length > 0) {
-            let currentSection = null;
-            let rowNum = 2;
+            let rowNum = 4; // after title + blank + 1 more blank
 
-            data.statistics.forEach((stat) => {
-                if (stat.section && stat.section !== currentSection) {
-                    currentSection = stat.section;
-                    const sectionRow = statsSheet.getRow(rowNum);
-                    sectionRow.getCell(1).value = currentSection;
-                    statsSheet.mergeCells(rowNum, 1, rowNum, 4);
-                    sectionRow.getCell(1).font = { name: 'Cairo', size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
-                    sectionRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: teal } };
-                    sectionRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-                    sectionRow.height = 26;
+            for (const section of stats.sections) {
+                // Section header
+                addSectionHeader(statsSheet, rowNum, section.name, 6, teal);
+                rowNum++;
+
+                // Column headers for this section
+                const hRow = statsSheet.getRow(rowNum);
+                hRow.getCell(1).value = 'المؤشر';
+                hRow.getCell(2).value = 'القيمة';
+                hRow.getCell(3).value = 'النسبة';
+                if (section.rows[0] && section.rows[0].words !== undefined) {
+                    hRow.getCell(4).value = 'عدد الكلمات';
+                }
+                styleHeaderRow(statsSheet, hRow, gold);
+                rowNum++;
+
+                // Data rows
+                const startDataRow = rowNum;
+                for (const item of section.rows) {
+                    const r = statsSheet.getRow(rowNum);
+                    r.getCell(1).value = item.indicator;
+                    r.getCell(2).value = item.value;
+                    r.getCell(3).value = item.percentage || '';
+                    if (item.words !== undefined) {
+                        r.getCell(4).value = item.words;
+                    }
+                    r.height = 24;
                     rowNum++;
                 }
+                applyAlternatingRows(statsSheet, startDataRow, rowNum - 1);
 
-                const dataRow = statsSheet.getRow(rowNum);
-                dataRow.getCell(1).value = stat.section || '';
-                dataRow.getCell(2).value = stat.indicator || '';
-                dataRow.getCell(3).value = stat.value != null ? stat.value : '';
-                dataRow.getCell(4).value = stat.percentage || '';
+                // Blank row between sections
                 rowNum++;
-            });
-
-            applyAlternatingRows(statsSheet, 2, rowNum - 1);
+            }
         }
 
-        // ════════════════════════════════════════════
-        // Sheet 3: لوحة القياس (Dashboard)
-        // ════════════════════════════════════════════
-        const dashSheet = workbook.addWorksheet('لوحة القياس', {
+        // ════════════════════════════════════════════════════
+        // Sheet 3: دليل الإجراء
+        // ════════════════════════════════════════════════════
+        const procSheet = workbook.addWorksheet('3- دليل الإجراء', {
             views: [{ rightToLeft: true }]
         });
 
-        dashSheet.columns = [
-            { header: 'المؤشر', key: 'label', width: 30 },
-            { header: 'القيمة', key: 'value', width: 25 }
-        ];
+        procSheet.getColumn(1).width = 10;
+        procSheet.getColumn(2).width = 35;
+        procSheet.getColumn(3).width = 40;
+        procSheet.getColumn(4).width = 35;
 
-        styleHeaderRow(dashSheet, dashSheet.getRow(1), gold);
+        if (data.procedureGuide) {
+            const proc = data.procedureGuide;
+            addTitleRow(procSheet, proc.title, 4);
+
+            // Headers at row 3
+            const hRow = procSheet.getRow(3);
+            hRow.getCell(1).value = 'الخطوة';
+            hRow.getCell(2).value = 'الإجراء';
+            hRow.getCell(3).value = 'التطبيق الفني';
+            hRow.getCell(4).value = 'المخرج';
+            styleHeaderRow(procSheet, hRow, teal);
+
+            // Steps
+            let rowNum = 4;
+            for (const step of proc.steps) {
+                const r = procSheet.getRow(rowNum);
+                r.getCell(1).value = step.step;
+                r.getCell(2).value = step.procedure;
+                r.getCell(3).value = step.application || '';
+                r.getCell(4).value = step.output || '';
+                r.height = 30;
+                rowNum++;
+            }
+            applyAlternatingRows(procSheet, 4, rowNum - 1);
+        }
+
+        // ════════════════════════════════════════════════════
+        // Sheet 4: المنهجية
+        // ════════════════════════════════════════════════════
+        const methSheet = workbook.addWorksheet('4- المنهجية', {
+            views: [{ rightToLeft: true }]
+        });
+
+        methSheet.getColumn(1).width = 28;
+        methSheet.getColumn(2).width = 70;
+
+        if (data.methodology && data.methodology.length > 0) {
+            // Title from first row
+            const titleText = data.methodology[0].details || data.methodology[0].element || `المنهجية — ${projectName}`;
+            addTitleRow(methSheet, titleText, 2);
+
+            let rowNum = 3;
+            // Skip first row (title) and write rest
+            for (let i = 1; i < data.methodology.length; i++) {
+                const item = data.methodology[i];
+                const r = methSheet.getRow(rowNum);
+
+                // Section headers (start with number)
+                if (item.element && /^\d+\./.test(item.element)) {
+                    r.getCell(1).value = item.element;
+                    r.getCell(2).value = item.details || '';
+                    r.getCell(1).font = { name: 'Cairo', size: 12, bold: true, color: { argb: teal } };
+                    r.getCell(2).font = { name: 'Cairo', size: 11, color: { argb: darkText } };
+                    r.height = 28;
+                } else {
+                    r.getCell(1).value = item.element || '';
+                    r.getCell(2).value = item.details || '';
+                    r.getCell(1).font = { name: 'Cairo', size: 11, color: { argb: darkText } };
+                    r.getCell(2).font = { name: 'Cairo', size: 11, color: { argb: darkText } };
+                }
+                r.getCell(2).alignment = { vertical: 'middle', wrapText: true };
+                rowNum++;
+            }
+        }
+
+        // ════════════════════════════════════════════════════
+        // Sheet 5: لوحة المعلومات
+        // ════════════════════════════════════════════════════
+        const dashSheet = workbook.addWorksheet('5- لوحة المعلومات', {
+            views: [{ rightToLeft: true }]
+        });
+
+        // Wide enough for 8 columns
+        for (let i = 1; i <= 8; i++) dashSheet.getColumn(i).width = 18;
 
         if (data.dashboard) {
             const d = data.dashboard;
-            const metrics = [
-                { label: 'إجمالي النصوص', value: d.totalTexts },
-                { label: 'النصوص المجتازة', value: d.passedTexts },
-                { label: 'نسبة الاجتياز', value: d.passRate },
-                { label: 'إجمالي الكلمات', value: d.totalWords },
-                { label: 'متوسط الكلمات لكل نص', value: d.avgWordsPerText },
-                { label: 'أنماط الخطاب', value: d.discourseTypes },
-                { label: 'عدد الأجزاء', value: d.partsCount },
-                { label: 'عدد المعايير', value: d.criteriaCount }
-            ];
+            addTitleRow(dashSheet, d.title, 8);
 
-            metrics.forEach((m, idx) => {
-                const row = dashSheet.getRow(idx + 2);
-                row.getCell(1).value = m.label;
-                row.getCell(2).value = m.value != null ? m.value : '—';
-                row.height = 30;
-                row.getCell(1).font = { name: 'Cairo', size: 13, bold: true, color: { argb: darkText } };
-                row.getCell(2).font = { name: 'Cairo', size: 14, bold: true, color: { argb: 'FF' + 'D4A843' } };
-                row.getCell(1).alignment = { vertical: 'middle' };
-                row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
-                const bgColor = idx % 2 === 0 ? white : lightGray;
-                row.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
-                row.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
+            // Summary metrics row (like reference file)
+            const metricsHeaderRow = dashSheet.getRow(3);
+            const metricsValueRow = dashSheet.getRow(4);
+            const summaryKeys = Object.keys(d.summary);
+            summaryKeys.forEach((key, idx) => {
+                metricsHeaderRow.getCell(idx + 1).value = key;
+                metricsHeaderRow.getCell(idx + 1).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+                metricsHeaderRow.getCell(idx + 1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: teal } };
+                metricsHeaderRow.getCell(idx + 1).alignment = { horizontal: 'center', vertical: 'middle' };
+
+                metricsValueRow.getCell(idx + 1).value = d.summary[key];
+                metricsValueRow.getCell(idx + 1).font = { name: 'Cairo', size: 14, bold: true, color: { argb: gold } };
+                metricsValueRow.getCell(idx + 1).alignment = { horizontal: 'center', vertical: 'middle' };
+                metricsValueRow.getCell(idx + 1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: cream } };
             });
-        }
+            metricsHeaderRow.height = 28;
+            metricsValueRow.height = 32;
 
-        // ════════════════════════════════════════════
-        // Sheet 4: دليل الإجراء (Procedure Guide)
-        // ════════════════════════════════════════════
-        const procSheet = workbook.addWorksheet('دليل الإجراء', {
-            views: [{ rightToLeft: true }]
-        });
+            // Blank row
+            let rowNum = 6;
 
-        procSheet.columns = [
-            { header: 'الخطوة', key: 'step', width: 10 },
-            { header: 'المعيار', key: 'criterion', width: 25 },
-            { header: 'النظرية', key: 'theory', width: 30 },
-            { header: 'الإجراء', key: 'procedure', width: 35 },
-            { header: 'المخرج', key: 'output', width: 30 }
-        ];
-
-        styleHeaderRow(procSheet, procSheet.getRow(1), teal);
-
-        if (data.procedureGuide && data.procedureGuide.length > 0) {
-            data.procedureGuide.forEach((step, idx) => {
-                const row = procSheet.addRow({
-                    step: step.step || (idx + 1),
-                    criterion: step.criterion || '',
-                    theory: step.theory || '',
-                    procedure: step.procedure || '',
-                    output: step.output || ''
+            // Parts table
+            if (d.partsTable && d.partsTable.length > 0) {
+                addSectionHeader(dashSheet, rowNum, 'التوزيع حسب الجزء', 4, teal);
+                rowNum++;
+                const ptHeaders = Object.keys(d.partsTable[0]);
+                const ptHRow = dashSheet.getRow(rowNum);
+                ptHeaders.forEach((h, idx) => {
+                    ptHRow.getCell(idx + 1).value = h;
                 });
-                row.height = 24;
-            });
-            applyAlternatingRows(procSheet, 2, data.procedureGuide.length + 1);
-        }
-
-        // ════════════════════════════════════════════
-        // Sheet 5: المنهجية (Methodology)
-        // ════════════════════════════════════════════
-        const methSheet = workbook.addWorksheet('المنهجية', {
-            views: [{ rightToLeft: true }]
-        });
-
-        methSheet.columns = [
-            { header: 'العنصر', key: 'element', width: 25 },
-            { header: 'التفاصيل', key: 'details', width: 60 }
-        ];
-
-        styleHeaderRow(methSheet, methSheet.getRow(1), gold);
-
-        if (data.methodology) {
-            const m = data.methodology;
-            let rowNum = 2;
-
-            if (m.source) {
-                const row = methSheet.getRow(rowNum++);
-                row.getCell(1).value = 'المصدر';
-                row.getCell(2).value = m.source;
-                row.getCell(1).font = { name: 'Cairo', size: 11, bold: true, color: { argb: darkText } };
-                row.getCell(2).font = { name: 'Cairo', size: 11, color: { argb: darkText } };
+                styleHeaderRow(dashSheet, ptHRow, gold);
+                rowNum++;
+                const ptStart = rowNum;
+                d.partsTable.forEach(pt => {
+                    const r = dashSheet.getRow(rowNum);
+                    Object.values(pt).forEach((v, idx) => {
+                        r.getCell(idx + 1).value = v;
+                    });
+                    r.height = 24;
+                    rowNum++;
+                });
+                applyAlternatingRows(dashSheet, ptStart, rowNum - 1);
+                rowNum++;
             }
 
-            if (m.criteria && m.criteria.length > 0) {
-                // Section header for criteria
-                const secRow = methSheet.getRow(rowNum++);
-                secRow.getCell(1).value = 'المعايير المطبّقة';
-                methSheet.mergeCells(rowNum - 1, 1, rowNum - 1, 2);
-                secRow.getCell(1).font = { name: 'Cairo', size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
-                secRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: teal } };
-                secRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
-                secRow.height = 26;
-
-                m.criteria.forEach((c) => {
-                    const row = methSheet.getRow(rowNum++);
-                    if (typeof c === 'string') {
-                        row.getCell(1).value = c;
-                    } else {
-                        row.getCell(1).value = c.name || c.criterion || '';
-                        row.getCell(2).value = c.description || c.details || '';
-                    }
-                    row.getCell(1).font = { name: 'Cairo', size: 11, color: { argb: darkText } };
-                    row.getCell(2).font = { name: 'Cairo', size: 11, color: { argb: darkText } };
+            // Types table
+            if (d.typesTable && d.typesTable.length > 0) {
+                addSectionHeader(dashSheet, rowNum, 'التوزيع حسب النمط الخطابي', 3, teal);
+                rowNum++;
+                const ttHeaders = Object.keys(d.typesTable[0]);
+                const ttHRow = dashSheet.getRow(rowNum);
+                ttHeaders.forEach((h, idx) => {
+                    ttHRow.getCell(idx + 1).value = h;
                 });
-            }
-
-            if (m.references && m.references.length > 0) {
-                // Section header for references
-                const refSecRow = methSheet.getRow(rowNum++);
-                refSecRow.getCell(1).value = 'المراجع';
-                methSheet.mergeCells(rowNum - 1, 1, rowNum - 1, 2);
-                refSecRow.getCell(1).font = { name: 'Cairo', size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
-                refSecRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: teal } };
-                refSecRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
-                refSecRow.height = 26;
-
-                m.references.forEach((ref) => {
-                    const row = methSheet.getRow(rowNum++);
-                    row.getCell(1).value = typeof ref === 'string' ? ref : (ref.title || ref.name || '');
-                    row.getCell(2).value = typeof ref === 'string' ? '' : (ref.details || ref.url || '');
-                    row.getCell(1).font = { name: 'Cairo', size: 11, color: { argb: darkText } };
-                    row.getCell(2).font = { name: 'Cairo', size: 11, color: { argb: darkText } };
+                styleHeaderRow(dashSheet, ttHRow, gold);
+                rowNum++;
+                const ttStart = rowNum;
+                d.typesTable.forEach(tt => {
+                    const r = dashSheet.getRow(rowNum);
+                    Object.values(tt).forEach((v, idx) => {
+                        r.getCell(idx + 1).value = v;
+                    });
+                    r.height = 24;
+                    rowNum++;
                 });
+                applyAlternatingRows(dashSheet, ttStart, rowNum - 1);
             }
-
-            applyAlternatingRows(methSheet, 2, rowNum - 1);
         }
 
         // ── Save file dialog ──
